@@ -1,14 +1,15 @@
 import React from 'react';
 import './App.css';
 
+import Header from './components/Header/Header';
+import ChartDisplay from './containers/ChartDisplay/ChartDisplay';
+
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>Charts</h1>
-      </header>
+      <Header />
       <main>
-        <p>Charts go here</p>
+        <ChartDisplay />
       </main>
     </div>
   );
