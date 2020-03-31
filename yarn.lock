@@ -2668,6 +2668,10 @@ cosmiconfig@^6.0.0:
     path-type "^4.0.0"
     yaml "^1.7.2"
 
+country-json@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/country-json/-/country-json-1.1.0.tgz#5a683d3590febd70a1512dd8778eaa9ead40f680"
+
 create-ecdh@^4.0.0:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/create-ecdh/-/create-ecdh-4.0.3.tgz#c9111b6f33045c4697f144787f9254cdc77c45ff"
