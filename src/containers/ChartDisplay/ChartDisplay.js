@@ -2,22 +2,31 @@ import React, { Component } from 'react';
 
 import Chart from '../../components/Chart/Chart/Chart';
 
+import CountrySelector from '../../components/CountrySelector/CountrySelector';
+
 import covidData from '../../data/time_series_covid19_deaths_global.json';
 
 import countryPopulation from '../../data/country-by-population.json';
 
 class ChartDisplay extends Component {
 
+  state = {
+    countries: [
+
+    ]
+  };
+
   data = [];
 
   countryMapping = {
     'US': 'United States'
-  }
+  };
 
   constructor(props) {
     super(props);
 
     this.data = this.getDataForCountries(['US', 'France', 'United Kingdom', 'Italy', 'Germany', 'Japan'], 'relative');
+
   }
 
   getNextDate = (previousDate) => {
@@ -39,8 +48,6 @@ class ChartDisplay extends Component {
     if (this.countryMapping.hasOwnProperty(country)) {
       countryKey = this.countryMapping[country];
     }
-    console.log('countryPopulation', countryPopulation);
-    console.log(countryPopulation.filter(e => e.country === countryKey)[0].population);
     return countryPopulation.filter(e => e.country === countryKey)[0].population;
   }
 
@@ -51,8 +58,6 @@ class ChartDisplay extends Component {
     let factor = 1;
     if (absRel === 'relative') {
       const population = this.getCountryPopulation(country)
-      console.log('population', population);
-      console.log('country', country);
       factor = 1000000/population;
     }
     do {
@@ -71,23 +76,43 @@ class ChartDisplay extends Component {
   }
 
   getDataForCountries = (countries, absRel) => {
-    // console.log(covidData);
     const selectedCountriesRawData = covidData.filter((result, index) => {
       return countries.includes(result['Country/Region']) && result['Province/State'] === '';
     });
     // const startDate = new Date('2020-01-22 Z');
-    const startDate = new Date('2020-02-12 Z');
+    const startDate = new Date('2020-02-28 Z');
     const endDate = new Date('2020-03-29 Z');
 
     const data = selectedCountriesRawData.map((row) => this.makeRowForChart(row, startDate, endDate, absRel));
-    console.log('data', data);
 
     return data;
   };
 
+  getInitialCountryState = () => {
+    return covidData.filter(el => (el['Province/State'] === '')).map(el => ({ name: el['Country/Region'], selected: false}));;
+  };
+
+  countryCheckedHandler = (country, selected) => {
+    const newResults = this.state.countries.filter((el, index) => {
+      const newEl = el;
+      if (el.name === country) {
+        newEl.selected = selected;
+      }
+      return newEl;
+    });
+    this.setState({countries: newResults});
+  };
+  
+  componentDidMount() {
+    this.setState({countries: this.getInitialCountryState()});
+  }
+
   render() {
     return (
-      <Chart data={this.data} />
+      <React.Fragment>
+        <Chart data={this.data} />
+        <CountrySelector countries={this.state.countries} onCountrySelect={this.countryCheckedHandler}/>
+      </React.Fragment>
     );
   }
 }
