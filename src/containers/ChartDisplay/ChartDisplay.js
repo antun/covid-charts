@@ -13,19 +13,21 @@ class ChartDisplay extends Component {
   state = {
     countries: [
 
-    ]
+    ],
+    chartData: []
   };
 
   data = [];
 
   countryMapping = {
-    'US': 'United States'
+    'US': 'United States',
+    'Russia': 'Russian Federation',
+    'Serbia': 'Yugoslavia'
   };
 
   constructor(props) {
     super(props);
 
-    this.data = this.getDataForCountries(['US', 'France', 'United Kingdom', 'Italy', 'Germany', 'Japan'], 'relative');
 
   }
 
@@ -92,6 +94,10 @@ class ChartDisplay extends Component {
     return covidData.filter(el => (el['Province/State'] === '')).map(el => ({ name: el['Country/Region'], selected: false}));;
   };
 
+  getSelectedCountries = () => {
+    return this.state.countries.filter(el => el.selected).map(el => el.name);
+  };
+
   countryCheckedHandler = (country, selected) => {
     const newResults = this.state.countries.filter((el, index) => {
       const newEl = el;
@@ -100,17 +106,22 @@ class ChartDisplay extends Component {
       }
       return newEl;
     });
-    this.setState({countries: newResults});
+    const selectedCountries = this.getSelectedCountries();
+    this.setState({countries: newResults, chartData: this.getDataForCountries(selectedCountries, 'relative') });
   };
   
   componentDidMount() {
-    this.setState({countries: this.getInitialCountryState()});
+    const initialState = {
+      countries: this.getInitialCountryState(),
+      chartData: this.getDataForCountries(['US', 'France', 'United Kingdom', 'Italy', 'Germany', 'Japan'], 'relative') 
+    };
+    this.setState(initialState);
   }
 
   render() {
     return (
       <React.Fragment>
-        <Chart data={this.data} />
+        <Chart data={this.state.chartData} />
         <CountrySelector countries={this.state.countries} onCountrySelect={this.countryCheckedHandler}/>
       </React.Fragment>
     );
