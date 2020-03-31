@@ -4,25 +4,20 @@ import Chart from '../../components/Chart/Chart/Chart';
 
 import covidData from '../../data/time_series_covid19_deaths_global.json';
 
-
+import countryPopulation from '../../data/country-by-population.json';
 
 class ChartDisplay extends Component {
 
   data = [];
 
+  countryMapping = {
+    'US': 'United States'
+  }
+
   constructor(props) {
     super(props);
 
-    this.data = this.getDataForCountries(['US', 'France', 'United Kingdom', 'Italy', 'Germany', 'Japan']);
-
-      /*
-      [
-      {
-        label: 'United States',
-        data: [['2020-02-28' , 0], ['2020-02-29', 0.003056234718826], ['2020-03-01', 0.003056234718826], ['2020-03-02', 0.018337408312959], ['2020-03-03', 0.021393643031785 ]]
-      }
-    ];
-    */
+    this.data = this.getDataForCountries(['US', 'France', 'United Kingdom', 'Italy', 'Germany', 'Japan'], 'relative');
   }
 
   getNextDate = (previousDate) => {
@@ -35,36 +30,56 @@ class ChartDisplay extends Component {
     return (date.getUTCMonth()+1) + '/' + date.getUTCDate() + '/' + (date.getUTCFullYear()-2000);
   }
 
-  makeRowForChart = (row, startDate, endDate) => {
+  formatDateForChartDisplay = (date) => {
+    return (date.getUTCMonth()+1) + '/' + date.getUTCDate()
+  }
+
+  getCountryPopulation = (country) => {
+    let countryKey = country;
+    if (this.countryMapping.hasOwnProperty(country)) {
+      countryKey = this.countryMapping[country];
+    }
+    console.log('countryPopulation', countryPopulation);
+    console.log(countryPopulation.filter(e => e.country === countryKey)[0].population);
+    return countryPopulation.filter(e => e.country === countryKey)[0].population;
+  }
+
+  makeRowForChart = (row, startDate, endDate, absRel) => {
     const data = [];
+    const country = row['Country/Region'];
     let currentDate = startDate;
+    let factor = 1;
+    if (absRel === 'relative') {
+      const population = this.getCountryPopulation(country)
+      console.log('population', population);
+      console.log('country', country);
+      factor = 1000000/population;
+    }
     do {
+      const deaths = row[this.formatDate(currentDate)];
       data.push([
-        this.formatDate(currentDate),
-        row[this.formatDate(currentDate)]
+        this.formatDateForChartDisplay(currentDate),
+        deaths * factor
       ]);
-      console.log(currentDate, currentDate);
       currentDate = this.getNextDate(currentDate);
     } while (this.formatDate(currentDate) !== this.formatDate(endDate));
     const formattedRow = {
-      label: row['Country/Region'],
+      label: country,
       data: data
     };
     return formattedRow;
   }
 
-  getDataForCountries = (countries) => {
+  getDataForCountries = (countries, absRel) => {
     // console.log(covidData);
     const selectedCountriesRawData = covidData.filter((result, index) => {
       return countries.includes(result['Country/Region']) && result['Province/State'] === '';
     });
-    console.log('@selectedCountriesRawData', selectedCountriesRawData);
-    const startDate = new Date('2020-01-22 Z');
+    // const startDate = new Date('2020-01-22 Z');
+    const startDate = new Date('2020-02-12 Z');
     const endDate = new Date('2020-03-29 Z');
-    // console.log(this.formatDate(startDate));
-    // console.log(this.getNextDate(startDate));
 
-    const data = selectedCountriesRawData.map((row) => this.makeRowForChart(row, startDate, endDate));
+    const data = selectedCountriesRawData.map((row) => this.makeRowForChart(row, startDate, endDate, absRel));
     console.log('data', data);
 
     return data;
