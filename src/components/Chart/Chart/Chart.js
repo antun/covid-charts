@@ -1,5 +1,7 @@
 import React from 'react';
 
+import classes from './Chart.module.css';
+
 import { Chart } from 'react-charts';
 
 const chart = (props) => {
@@ -10,7 +12,7 @@ const chart = (props) => {
   ];
 
   return (
-    <div
+    <div className={classes.Chart}
       style={{
         width: '600px',
         height: '300px'

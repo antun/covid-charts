@@ -1,8 +1,11 @@
 .CountrySelector {
   display: inline-block;
+  vertical-align: top;
+  border: 2px solid teal;
 }
 
 .CountrySelector ul {
   list-style: none;
   width: auto;
+  padding-left: 0px;
 }
