@@ -25,12 +25,6 @@ class ChartDisplay extends Component {
     'Serbia': 'Yugoslavia'
   };
 
-  constructor(props) {
-    super(props);
-
-
-  }
-
   getNextDate = (previousDate) => {
     const nextDate = new Date(previousDate);
     nextDate.setHours(previousDate.getHours() + 24);
@@ -83,8 +77,8 @@ class ChartDisplay extends Component {
     });
     // const startDate = new Date('2020-01-22 Z');
     const startDate = new Date('2020-02-28 Z');
-    const endDate = new Date('2020-03-29 Z');
-
+    const endDate = new Date();
+    endDate.setUTCHours(-1);
     const data = selectedCountriesRawData.map((row) => this.makeRowForChart(row, startDate, endDate, absRel));
 
     return data;
