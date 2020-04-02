@@ -1,0 +1,8 @@
+.CountrySelector {
+  display: inline-block;
+}
+
+.CountrySelector ul {
+  list-style: none;
+  width: auto;
+}

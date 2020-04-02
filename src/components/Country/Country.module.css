@@ -1,0 +1,11 @@
+.Country {
+  padding: 8px;
+}
+
+.Country input {
+  margin: 0px 10px 0px 0px;
+}
+
+.Country label {
+  margin: 0px 20px 0px 3px;
+}
