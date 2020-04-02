@@ -9,7 +9,9 @@ const countrySelector = (props) => {
   return (
     <div>
       <h2>Countries</h2>
-      {countries}
+      <ul>
+        {countries}
+      </ul>
     </div>
   );
 }
