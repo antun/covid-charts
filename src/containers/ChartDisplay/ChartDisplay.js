@@ -22,7 +22,8 @@ class ChartDisplay extends Component {
   countryMapping = {
     'US': 'United States',
     'Russia': 'Russian Federation',
-    'Serbia': 'Yugoslavia'
+    'Serbia': 'Yugoslavia',
+    'Taiwan*': 'Taiwan'
   };
 
   getNextDate = (previousDate) => {
