@@ -1,5 +1,6 @@
 .CountrySelector {
   height: 300px;
+  width: 275px;
   overflow-y: scroll;
 }
 

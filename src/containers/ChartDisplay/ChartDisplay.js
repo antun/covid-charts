@@ -17,7 +17,7 @@ class ChartDisplay extends Component {
   state = {
     initialCountries: ['US', 'France', 'United Kingdom', 'Italy', 'Germany', 'Japan'],
     adjustments: {
-      relativeToPopulation: false
+      relativeToPopulation: true
     },
     countries: [
 
