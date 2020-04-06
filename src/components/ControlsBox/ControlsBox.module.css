@@ -1,0 +1,6 @@
+.ControlsBox {
+  display: inline-block;
+  border: 5px solid #1C6EA4;
+  border-radius: 10px;
+  vertical-align: top;
+}

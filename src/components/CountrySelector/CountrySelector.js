@@ -9,8 +9,8 @@ const countrySelector = (props) => {
   ));
   return (
     <div className={classes.CountrySelector}>
-      <h2>Countries</h2>
-      <ul >
+      <h3>Countries</h3>
+      <ul>
         {countries}
       </ul>
     </div>

@@ -1,7 +1,6 @@
 .CountrySelector {
-  display: inline-block;
-  vertical-align: top;
-  border: 2px solid teal;
+  height: 300px;
+  overflow-y: scroll;
 }
 
 .CountrySelector ul {

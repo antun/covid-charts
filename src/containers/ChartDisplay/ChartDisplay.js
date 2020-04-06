@@ -4,6 +4,10 @@ import Chart from '../../components/Chart/Chart/Chart';
 
 import CountrySelector from '../../components/CountrySelector/CountrySelector';
 
+import PopulationSelector from '../../components/PopulationSelector/PopulationSelector';
+
+import ControlsBox from '../../components/ControlsBox/ControlsBox';
+
 import covidData from '../../data/time_series_covid19_deaths_global.json';
 
 import countryPopulation from '../../data/country-by-population.json';
@@ -13,7 +17,7 @@ class ChartDisplay extends Component {
   state = {
     initialCountries: ['US', 'France', 'United Kingdom', 'Italy', 'Germany', 'Japan'],
     adjustments: {
-      relativeToPopulation: true
+      relativeToPopulation: false
     },
     countries: [
 
@@ -114,8 +118,16 @@ class ChartDisplay extends Component {
       }
       return newEl;
     });
-    this.setState({countries: newResults, chartData: this.makeChartData() });
+    this.setState({countries: newResults, chartData: this.makeChartData()});
   };
+
+  populationHandler = (newValue) => {
+    this.setState({adjustments: {relativeToPopulation: newValue}}, this.refreshChart);
+  }
+
+  refreshChart = () => {
+    this.setState({chartData: this.makeChartData()});
+  }
   
   componentDidMount() {
     const initialState = {
@@ -124,14 +136,18 @@ class ChartDisplay extends Component {
       chartData: this.makeChartData() 
     };
     this.setState(initialState);
-    console.log('after componentDidMount', this.state.initialCountries);
   }
 
   render() {
     return (
       <React.Fragment>
         <Chart data={this.state.chartData} />
-        <CountrySelector countries={this.state.countries} onCountrySelect={this.countryCheckedHandler}/>
+        <ControlsBox>
+          <CountrySelector countries={this.state.countries} onCountrySelect={this.countryCheckedHandler}/>
+        </ControlsBox>
+        <ControlsBox>
+          <PopulationSelector relative={this.state.adjustments.relativeToPopulation} onSelect={this.populationHandler} />
+        </ControlsBox>
       </React.Fragment>
     );
   }
