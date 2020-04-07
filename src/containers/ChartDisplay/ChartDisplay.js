@@ -6,6 +6,8 @@ import CountrySelector from '../../components/CountrySelector/CountrySelector';
 
 import PopulationSelector from '../../components/PopulationSelector/PopulationSelector';
 
+import DateSelector from '../../components/DateSelector/DateSelector';
+
 import ControlsBox from '../../components/ControlsBox/ControlsBox';
 
 import covidData from '../../data/time_series_covid19_deaths_global.json';
@@ -17,7 +19,8 @@ class ChartDisplay extends Component {
   state = {
     initialCountries: ['US', 'France', 'United Kingdom', 'Italy', 'Germany', 'Japan'],
     adjustments: {
-      relativeToPopulation: true
+      relativeToPopulation: true,
+      dateAlignmentType: 'exact'
     },
     countries: [
 
@@ -31,7 +34,6 @@ class ChartDisplay extends Component {
     'Serbia': 'Yugoslavia',
     'Taiwan*': 'Taiwan'
   };
-
 
   getNextDate = (previousDate) => {
     const nextDate = new Date(previousDate);
@@ -64,19 +66,43 @@ class ChartDisplay extends Component {
       const population = this.getCountryPopulation(country)
       factor = 1000000/population;
     }
+    if (this.state.adjustments.dateAlignmentType === 'firstdeath') {
+      const dateOfFirstDeath = this.findDateOfFirstDeath(country);
+      currentDate = dateOfFirstDeath;
+    }
+    let day = 0;
     do {
+      let xAxisLabel = this.formatDateForChartDisplay(currentDate);
+      if (this.state.adjustments.dateAlignmentType === 'firstdeath') {
+        xAxisLabel = day;
+      }
       const deaths = row[this.formatDate(currentDate)];
       data.push([
-        this.formatDateForChartDisplay(currentDate),
+        xAxisLabel,
         deaths * factor
       ]);
       currentDate = this.getNextDate(currentDate);
+      day += 1;
     } while (this.formatDate(currentDate) !== this.formatDate(endDate));
     const formattedRow = {
       label: country,
       data: data
     };
     return formattedRow;
+  }
+
+  findDateOfFirstDeath = (country) => {
+    const row = covidData.filter(el => el['Country/Region'] === country && el['Province/State'] === '')[0];
+    let currentDate = new Date('2020-01-22 Z'); // Data begins on this date
+    const endDate = new Date();
+    endDate.setUTCHours(-1);
+    do {
+      const deaths = 1*(row[this.formatDate(currentDate)]);
+      if (deaths > 0) {
+        return currentDate;
+      }
+      currentDate = this.getNextDate(currentDate);
+    } while (this.formatDate(currentDate) !== this.formatDate(endDate));
   }
 
   makeChartData = () => {
@@ -89,15 +115,16 @@ class ChartDisplay extends Component {
       // Only on first run
       selectedCountries = this.state.initialCountries;
     }
-    console.log('selectedCountries', selectedCountries);
     const selectedCountriesRawData = covidData.filter((result, index) => {
       return selectedCountries.includes(result['Country/Region']) && result['Province/State'] === '';
     });
     // const startDate = new Date('2020-01-22 Z');
-    const startDate = new Date('2020-02-28 Z');
+    let startDate = new Date('2020-02-28 Z');
     const endDate = new Date();
     endDate.setUTCHours(-1);
-    const data = selectedCountriesRawData.map((row) => this.makeRowForChart(row, startDate, endDate));
+    const data = selectedCountriesRawData.map((row) => {
+      return this.makeRowForChart(row, startDate, endDate);
+    });
 
     return data;
   };
@@ -122,7 +149,11 @@ class ChartDisplay extends Component {
   };
 
   populationHandler = (newValue) => {
-    this.setState({adjustments: {relativeToPopulation: newValue}}, this.refreshChart);
+    this.setState({adjustments: {...this.state.adjustments, relativeToPopulation: newValue}}, this.refreshChart);
+  }
+
+  dateAlignmentHandler = e => {
+    this.setState({adjustments: {...this.state.adjustments, dateAlignmentType: e.target.value}}, this.refreshChart);
   }
 
   refreshChart = () => {
@@ -147,6 +178,10 @@ class ChartDisplay extends Component {
         </ControlsBox>
         <ControlsBox>
           <PopulationSelector relative={this.state.adjustments.relativeToPopulation} onSelect={this.populationHandler} />
+        </ControlsBox>
+        <ControlsBox>
+          <DateSelector dateAlignment={this.state.adjustments.dateAlignmentType} 
+                        onDateAlignmentTypeChange={this.dateAlignmentHandler} />
         </ControlsBox>
       </React.Fragment>
     );
