@@ -1,11 +1,18 @@
 .CountrySelector {
-  height: 300px;
   width: 275px;
-  overflow-y: scroll;
 }
 
 .CountrySelector ul {
   list-style: none;
   width: auto;
   padding-left: 0px;
+}
+
+.SelectedContainer {
+  background-color: #eaeaea;
+}
+
+.CountryListContainer {
+  overflow-y: scroll;
+  height: 300px;
 }

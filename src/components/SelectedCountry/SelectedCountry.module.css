@@ -1,0 +1,14 @@
+.SelectedCountry {
+  background-color: #dc3545;
+  display: inline-block;
+  color: #212529;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  padding: .375rem .75rem;
+  font-size: 0.7rem;
+  line-height: 1.25;
+  border-radius: .25rem;
+  margin: 0.1rem;
+}
