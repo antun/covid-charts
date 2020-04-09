@@ -17,6 +17,7 @@
   },
   "scripts": {
     "prepublish": "yarn run getdata",
+    "deploy": "bash bin/deploy.sh",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
