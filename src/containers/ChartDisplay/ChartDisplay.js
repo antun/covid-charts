@@ -93,7 +93,7 @@ class ChartDisplay extends Component {
 
   findDateOfFirstDeath = (country) => {
     const row = covidData.filter(el => el['Country/Region'] === country && el['Province/State'] === '')[0];
-    let currentDate = new Date('2020-01-22 Z'); // Data begins on this date
+    let currentDate = new Date('2020-01-22'); // Data begins on this date
     const endDate = new Date();
     endDate.setUTCHours(-1);
     do {
@@ -118,8 +118,8 @@ class ChartDisplay extends Component {
     const selectedCountriesRawData = covidData.filter((result, index) => {
       return selectedCountries.includes(result['Country/Region']) && result['Province/State'] === '';
     });
-    // const startDate = new Date('2020-01-22 Z');
-    let startDate = new Date('2020-02-28 Z');
+    // const startDate = new Date('2020-01-22');
+    let startDate = new Date('2020-02-28');
     const endDate = new Date();
     endDate.setUTCHours(-1);
     const data = selectedCountriesRawData.map((row) => {
