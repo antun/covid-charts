@@ -3,14 +3,16 @@ var fs = require('fs');
 var csv2json = require('csv2json');
 
 
-const url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv';
+const csseCovid19TimeSeriesURL = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv';
+const countryLookupTableURL = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/UID_ISO_FIPS_LookUp_Table.csv';
+
 const downloadDir = './download';
 
 if (!fs.existsSync(downloadDir)){
   fs.mkdirSync(downloadDir);
 }
 
-axios.get(url)
+axios.get(csseCovid19TimeSeriesURL)
   .then(function (response) {
     const rawOutputFile = downloadDir + '/' + 'time_series_covid19_deaths_global.csv';
     const jsonOutputFile = './src/data/' + 'time_series_covid19_deaths_global.json';
@@ -21,5 +23,21 @@ axios.get(url)
   })
   .catch(function (error) {
     // handle error
-    console.log('Error retrieving COVID-19 data from', url,  error);
+    console.log('Error retrieving COVID-19 data from', csseCovid19TimeSeriesURL,  error);
   });
+
+
+axios.get(countryLookupTableURL)
+  .then(function (response) {
+    const rawOutputFile = downloadDir + '/' + 'UID_ISO_FIPS_LookUp_Table.csv';
+    const jsonOutputFile = './src/data/' + 'UID_ISO_FIPS_LookUp_Table.json';
+    fs.writeFileSync(rawOutputFile, response.data);
+    fs.createReadStream(rawOutputFile)
+    .pipe(csv2json())
+    .pipe(fs.createWriteStream(jsonOutputFile));
+  })
+  .catch(function (error) {
+    // handle error
+    console.log('Error retrieving country data from', countryLookupTableURL,  error);
+  });
+

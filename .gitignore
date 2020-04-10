@@ -8,7 +8,6 @@
 
 # production
 /build
-/src/data/time_series_covid19_deaths_global.json
 /download
 
 # misc
@@ -24,3 +23,6 @@ yarn-error.log*
 .*.swp
 
 bin/deploy.sh
+
+src/data/time_series_covid19_deaths_global.json
+src/data/UID_ISO_FIPS_LookUp_Table.json

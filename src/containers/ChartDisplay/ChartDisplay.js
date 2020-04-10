@@ -12,7 +12,7 @@ import ControlsBox from '../../components/ControlsBox/ControlsBox';
 
 import covidData from '../../data/time_series_covid19_deaths_global.json';
 
-import countryPopulation from '../../data/country-by-population.json';
+import countryData from '../../data/UID_ISO_FIPS_LookUp_Table.json';
 
 class ChartDisplay extends Component {
 
@@ -26,13 +26,6 @@ class ChartDisplay extends Component {
 
     ],
     chartData: []
-  };
-
-  countryMapping = {
-    'US': 'United States',
-    'Russia': 'Russian Federation',
-    'Serbia': 'Yugoslavia',
-    'Taiwan*': 'Taiwan'
   };
 
   getNextDate = (previousDate) => {
@@ -50,11 +43,7 @@ class ChartDisplay extends Component {
   }
 
   getCountryPopulation = (country) => {
-    let countryKey = country;
-    if (this.countryMapping.hasOwnProperty(country)) {
-      countryKey = this.countryMapping[country];
-    }
-    return countryPopulation.filter(e => e.country === countryKey)[0].population;
+    return countryData.filter(e => e.Combined_Key === country)[0].Population;
   }
 
   makeRowForChart = (row, startDate, endDate) => {
