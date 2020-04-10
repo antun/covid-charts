@@ -38,5 +38,6 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "http://antunkarlovac.com/software/sites/covid-charts"
+  "homepage": "http://antunkarlovac.com/software/sites/covid-charts",
+  "repository": "https://github.com/antun/covid-charts"
 }
