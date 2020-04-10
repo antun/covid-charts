@@ -10,14 +10,18 @@ import DateSelector from '../../components/DateSelector/DateSelector';
 
 import ControlsBox from '../../components/ControlsBox/ControlsBox';
 
-import covidData from '../../data/time_series_covid19_deaths_global.json';
+import CovidData from '../../data/CovidData/CovidData';
 
-import countryData from '../../data/UID_ISO_FIPS_LookUp_Table.json';
+const covidDataInstance = new CovidData();
+const covidData = covidDataInstance.getCovidData();
+const countryData = covidDataInstance.countryData();
+
 
 class ChartDisplay extends Component {
 
   state = {
     initialCountries: ['US', 'France', 'United Kingdom', 'Italy', 'Germany', 'Japan'],
+    //initialCountries: ['US'],
     adjustments: {
       relativeToPopulation: true,
       dateAlignmentType: 'exact'
@@ -43,12 +47,12 @@ class ChartDisplay extends Component {
   }
 
   getCountryPopulation = (country) => {
-    return countryData.filter(e => e.Combined_Key === country)[0].Population;
+    return 1*countryData.filter(e => e.Country_Region === country)[0].Population;
   }
 
-  makeRowForChart = (row, startDate, endDate) => {
+  makeRowForChart = (country, startDate, endDate) => {
+    const row = covidData.filter(row => (row['Province/State'] === '' && row['Country/Region'] === country))[0];
     const data = [];
-    const country = row['Country/Region'];
     let currentDate = startDate;
     let factor = 1;
     if (this.state.adjustments.relativeToPopulation) {
@@ -104,22 +108,20 @@ class ChartDisplay extends Component {
       // Only on first run
       selectedCountries = this.state.initialCountries;
     }
-    const selectedCountriesRawData = covidData.filter((result, index) => {
-      return selectedCountries.includes(result['Country/Region']) && result['Province/State'] === '';
-    });
+    const selectedCountriesRawData = countryData.filter(row => (selectedCountries.indexOf(row.Country_Region) > -1));
     // const startDate = new Date('2020-01-22');
     let startDate = new Date('2020-02-28');
     const endDate = new Date();
     endDate.setUTCHours(-1);
     const data = selectedCountriesRawData.map((row) => {
-      return this.makeRowForChart(row, startDate, endDate);
+      return this.makeRowForChart(row.Country_Region, startDate, endDate);
     });
 
     return data;
   };
 
   getInitialCountryState = () => {
-    return covidData.filter(el => (el['Province/State'] === '')).map(el => ({ name: el['Country/Region'], selected: this.state.initialCountries.includes(el['Country/Region'])}));;
+    return countryData.map(el => ({ name: el.Country_Region, selected: this.state.initialCountries.indexOf(el.Country_Region) > -1}));
   };
 
   getSelectedCountries = () => {
