@@ -20,8 +20,8 @@ const countryData = covidDataInstance.countryData();
 class ChartDisplay extends Component {
 
   state = {
-    initialCountries: ['US', 'France', 'United Kingdom', 'Italy', 'Germany', 'Japan'],
-    //initialCountries: ['US'],
+    //initialCountries: ['US', 'France', 'United Kingdom', 'Italy', 'Germany', 'Japan'],
+    initialCountries: ['US'],
     adjustments: {
       relativeToPopulation: true,
       dateAlignmentType: 'exact'
