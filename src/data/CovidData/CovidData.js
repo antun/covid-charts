@@ -23,6 +23,11 @@ class CovidData {
         normalized.push(el);
       }
     }
+    normalized.sort((a,b) => {
+      const textA = a.Country_Region.toUpperCase();
+      const textB = b.Country_Region.toUpperCase();
+      return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+    });
     return normalized;
   }
 
