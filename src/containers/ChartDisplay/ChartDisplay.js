@@ -12,6 +12,8 @@ import ControlsBox from '../../components/ControlsBox/ControlsBox';
 
 import CovidData from '../../data/CovidData/CovidData';
 
+import * as Utils from '../../utils/utils';
+
 const covidDataInstance = new CovidData();
 const covidData = covidDataInstance.getCovidData();
 console.log('covidData', covidData);
@@ -32,7 +34,8 @@ class ChartDisplay extends Component {
     ],
     adjustments: {
       relativeToPopulation: true,
-      dateAlignmentType: 'exact'
+      dateAlignmentType: 'exact',
+      dateAlignmentOffset: 1
     },
     countries: [
 
@@ -40,15 +43,6 @@ class ChartDisplay extends Component {
     chartData: []
   };
 
-  getNextDate = (previousDate) => {
-    const nextDate = new Date(previousDate);
-    nextDate.setHours(previousDate.getHours() + 24);
-    return nextDate;
-  }
-
-  formatDate = (date) => {
-    return (date.getUTCMonth()+1) + '/' + date.getUTCDate() + '/' + (date.getUTCFullYear()-2000);
-  }
 
   formatDateForChartDisplay = (date) => {
     return (date.getUTCMonth()+1) + '/' + date.getUTCDate()
@@ -68,7 +62,7 @@ class ChartDisplay extends Component {
       factor = 1000000/population;
     }
     if (this.state.adjustments.dateAlignmentType === 'firstdeath') {
-      const dateOfFirstDeath = this.findDateOfFirstDeath(country, province);
+      const dateOfFirstDeath = covidDataInstance.findDateOfNthDeath(country, province, this.state.adjustments.dateAlignmentOffset);
       currentDate = dateOfFirstDeath;
     }
     let day = 0;
@@ -77,7 +71,7 @@ class ChartDisplay extends Component {
       if (this.state.adjustments.dateAlignmentType === 'firstdeath') {
         xAxisLabel = day;
       }
-      const deaths = row[this.formatDate(currentDate)];
+      const deaths = row[covidDataInstance.formatDate(currentDate)];
       if (!deaths) {
         break;
       }
@@ -85,9 +79,9 @@ class ChartDisplay extends Component {
         xAxisLabel,
         deaths * factor
       ]);
-      currentDate = this.getNextDate(currentDate);
+      currentDate = Utils.getNextDate(currentDate);
       day += 1;
-    } while (this.formatDate(currentDate) !== this.formatDate(endDate));
+    } while (covidDataInstance.formatDate(currentDate) !== covidDataInstance.formatDate(endDate));
     const formattedRow = {
       label: country,
       data: data
@@ -95,19 +89,6 @@ class ChartDisplay extends Component {
     return formattedRow;
   }
 
-  findDateOfFirstDeath = (country, province) => {
-    const row = covidData.filter(el => el['Country/Region'] === country && el['Province/State'] === province)[0];
-    let currentDate = new Date('2020-01-22'); // Data begins on this date
-    const endDate = new Date();
-    endDate.setUTCHours(-1);
-    do {
-      const deaths = 1*(row[this.formatDate(currentDate)]);
-      if (deaths > 0) {
-        return currentDate;
-      }
-      currentDate = this.getNextDate(currentDate);
-    } while (this.formatDate(currentDate) !== this.formatDate(endDate));
-  }
 
   makeChartData = () => {
     let selectedCountries;
@@ -166,6 +147,10 @@ class ChartDisplay extends Component {
     this.setState({adjustments: {...this.state.adjustments, dateAlignmentType: e.target.value}}, this.refreshChart);
   }
 
+  dateAlignmentOffsetHandler = e => {
+    this.setState({adjustments: {...this.state.adjustments, dateAlignmentOffset: e.target.value}}, this.refreshChart);
+  }
+
   refreshChart = () => {
     this.setState({chartData: this.makeChartData()});
   }
@@ -191,7 +176,9 @@ class ChartDisplay extends Component {
         </ControlsBox>
         <ControlsBox>
           <DateSelector dateAlignment={this.state.adjustments.dateAlignmentType} 
-                        onDateAlignmentTypeChange={this.dateAlignmentHandler} />
+                        onDateAlignmentTypeChange={this.dateAlignmentHandler}
+                        dateAlignmentOffset={this.state.adjustments.dateAlignmentOffset}
+                        onDateAlignmentOffsestChange={this.dateAlignmentOffsetHandler} />
         </ControlsBox>
       </React.Fragment>
     );

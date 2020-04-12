@@ -1,5 +1,6 @@
 import rawCovidData from '../time_series_covid19_deaths_global.json';
 import rawCountryData from '../UID_ISO_FIPS_LookUp_Table.json';
+import * as Utils from '../../utils/utils';
 
 class CovidData {
   constructor() {
@@ -105,6 +106,24 @@ class CovidData {
       }
     }
     return normalized;
+  }
+
+  formatDate (date) {
+    return (date.getUTCMonth()+1) + '/' + date.getUTCDate() + '/' + (date.getUTCFullYear()-2000);
+  }
+
+  findDateOfNthDeath (country, province, n) {
+    const row = this.normalizedCovidData.filter(el => el['Country/Region'] === country && el['Province/State'] === province)[0];
+    let currentDate = new Date('2020-01-22'); // Data begins on this date
+    const endDate = new Date();
+    endDate.setUTCHours(-1);
+    do {
+      const deaths = 1*(row[this.formatDate(currentDate)]);
+      if (deaths >= n) {
+        return currentDate;
+      }
+      currentDate = Utils.getNextDate(currentDate);
+    } while (this.formatDate(currentDate) !== this.formatDate(endDate));
   }
 
   getCovidData () {
