@@ -14,6 +14,7 @@ import CovidData from '../../data/CovidData/CovidData';
 
 const covidDataInstance = new CovidData();
 const covidData = covidDataInstance.getCovidData();
+console.log('covidData', covidData);
 const countryData = covidDataInstance.countryData();
 
 
@@ -67,7 +68,7 @@ class ChartDisplay extends Component {
       factor = 1000000/population;
     }
     if (this.state.adjustments.dateAlignmentType === 'firstdeath') {
-      const dateOfFirstDeath = this.findDateOfFirstDeath(country);
+      const dateOfFirstDeath = this.findDateOfFirstDeath(country, province);
       currentDate = dateOfFirstDeath;
     }
     let day = 0;
@@ -94,8 +95,8 @@ class ChartDisplay extends Component {
     return formattedRow;
   }
 
-  findDateOfFirstDeath = (country) => {
-    const row = covidData.filter(el => el['Country/Region'] === country && el['Province/State'] === '')[0];
+  findDateOfFirstDeath = (country, province) => {
+    const row = covidData.filter(el => el['Country/Region'] === country && el['Province/State'] === province)[0];
     let currentDate = new Date('2020-01-22'); // Data begins on this date
     const endDate = new Date();
     endDate.setUTCHours(-1);
