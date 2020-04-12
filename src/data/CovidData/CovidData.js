@@ -7,14 +7,13 @@ class CovidData {
     this.normalizedCovidData = this.normalizeCovidData(rawCovidData);
   }
 
-  rollupCountries = [
+  treatAsProvinces = [
     'Australia',
     'Canada',
-    'China',
-    'Denmark',
-    'France',
-    'Netherlands',
-    'United Kingdom'
+    'China'
+  ];
+
+  rollupCountries = [
   ];
 
   normalizeCountryData(rawCountryData) {
@@ -22,11 +21,16 @@ class CovidData {
     let i;
     for (i=0; i<rawCountryData.length; i++) {
       let el = rawCountryData[i];
-      // Clear any that have non-blank Admin2 values. These seem to be
-      // counties in the US
-      if (el.Admin2 === '' && el.Province_State === '') {
-        normalized.push(el);
+      if (this.treatAsProvinces.indexOf(el.Country_Region) > -1 && el.Province_State === '' ) {
+        // Skip countries that we're treating as provinces but that also have a country line
+        continue;
       }
+      if (el.Country_Region === 'US' && (el.Province_State !== '' || el.Admin2 !== '')) {
+        // Clear any that have non-blank Admin2 values. These seem to be
+        // counties in the US
+        continue;
+      }
+      normalized.push(el);
     }
     normalized.sort((a,b) => {
       const textA = a.Country_Region.toUpperCase();
@@ -36,20 +40,32 @@ class CovidData {
     return normalized;
   }
 
-  getCovidRows(country, rawCovidData) {
+  _getRawCovidRows(country, rawCovidData) {
     const covidRows = rawCovidData.filter(el => el['Country/Region'] === country);
     return covidRows;
+  }
+
+  _getRawCovidRow(country, province, rawCovidData) {
+    const covidRow = rawCovidData.filter(el => el['Country/Region'] === country && el['Province/State'] === province);
+    if (covidRow.length > 1) {
+      console.warn('more than one row found for,', country, province);
+    }
+    return covidRow[0];
   }
 
   isDateColumn(key) {
     return key.match(/[0-9]+\/[0-9]+\/[0-9]+/);
   }
 
+  // Country_Region,Province_State
+  getCovidRowForCountry(country, province) {
+    const row = this.normalizedCovidData.filter(row => (row['Province/State'] === province && row['Country/Region'] === country))[0];
+    return row;
+  }
+
   combineDataForCountries(covidRows) {
     // Find the main row
-    console.log('covidRows', covidRows);
     const countryRow = covidRows.filter(row => row['Province/State'] === '');
-    console.log('countryRowBefore', countryRow);
     let i;
     for (i=0; i<covidRows.length; i++) {
       const row = covidRows[i];
@@ -63,27 +79,31 @@ class CovidData {
         }
       }
     }
-    console.log('countryRow', countryRow);
     return countryRow;
   }
 
   normalizeCovidData(rawCovidData) {
-    console.log('before', rawCovidData);
     let normalized = [];
     let i;
     for (i=0; i<this.normalizedCountryData.length; i++) {
       const countryRow = this.normalizedCountryData[i];
-      const covidRows = this.getCovidRows(countryRow.Country_Region, rawCovidData);
-      if (this.rollupCountries.indexOf(countryRow.Country_Region) === -1) {
-        if (covidRows.length > 1) {
-          console.warn('More than one row found for',countryRow.Country_Region);
-        }
-        normalized.push(covidRows[0]);
+      if (this.treatAsProvinces.indexOf(countryRow.Country_Region) === -1) {
+        // const covidRows = this._getRawCovidRows(countryRow.Country_Region, rawCovidData);
+        const covidRow = this._getRawCovidRow(countryRow.Country_Region, countryRow.Province_State, rawCovidData);
+        normalized.push(covidRow);
       } else {
-        normalized.push(this.combineDataForCountries(covidRows));
+        // This is a province
+        if (countryRow.Province_State === '') {
+          continue;
+        }
+        const provinceRow = this._getRawCovidRow(countryRow.Country_Region, countryRow.Province_State, rawCovidData);
+        if (provinceRow) {
+          normalized.push(provinceRow);
+        } else {
+          console.warn('Could not find province row for', countryRow.Country_Region, countryRow.Province_State);
+        }
       }
     }
-    console.log('after', normalized);
     return normalized;
   }
 
