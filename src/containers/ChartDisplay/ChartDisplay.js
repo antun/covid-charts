@@ -20,9 +20,15 @@ const countryData = covidDataInstance.countryData();
 class ChartDisplay extends Component {
 
   state = {
-    //initialCountries: ['US', 'France', 'United Kingdom', 'Italy', 'Germany', 'Japan'],
-    //initialCountries: ['US', 'France', 'United Kingdom', 'Italy', 'Germany', 'Japan'],
-    initialCountries: [{Country_Region: 'US', Province_State: '', Population: "329466283"}],
+    initialCountries: [
+      {Country_Region: 'US', Province_State: ''},
+      {Country_Region: 'France', Province_State: ''},
+      {Country_Region: 'United Kingdom', Province_State: ''},
+      {Country_Region: 'Italy', Province_State: ''},
+      {Country_Region: 'Germany', Province_State: ''},
+      {Country_Region: 'Spain', Province_State: ''},
+      {Country_Region: 'Japan', Province_State: ''}
+    ],
     adjustments: {
       relativeToPopulation: true,
       dateAlignmentType: 'exact'
@@ -109,10 +115,10 @@ class ChartDisplay extends Component {
         return el.selected === true;
       });
     } else {
-      // Only on first run
-      // TODO: This actually should *copy* the objects INCLUDING
-      // population
-      selectedCountries = this.state.initialCountries;
+      // Only on first run copy default countries
+      selectedCountries = countryData.filter(country => (
+        this.state.initialCountries.findIndex(initialCountry => (country.Country_Region === initialCountry.Country_Region && country.Province_State === initialCountry.Province_State)) > -1
+      ));
     }
     // const startDate = new Date('2020-01-22');
     let startDate = new Date('2020-02-28');
