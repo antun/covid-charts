@@ -12,6 +12,8 @@ import ControlsBox from '../../components/ControlsBox/ControlsBox';
 
 import CovidData from '../../data/CovidData/CovidData';
 
+import * as Utils from '../../utils/utils';
+
 const covidDataInstance = new CovidData();
 const covidData = covidDataInstance.getCovidData();
 console.log('covidData', covidData);
@@ -40,11 +42,6 @@ class ChartDisplay extends Component {
     chartData: []
   };
 
-  getNextDate = (previousDate) => {
-    const nextDate = new Date(previousDate);
-    nextDate.setHours(previousDate.getHours() + 24);
-    return nextDate;
-  }
 
   formatDateForChartDisplay = (date) => {
     return (date.getUTCMonth()+1) + '/' + date.getUTCDate()
@@ -64,7 +61,7 @@ class ChartDisplay extends Component {
       factor = 1000000/population;
     }
     if (this.state.adjustments.dateAlignmentType === 'firstdeath') {
-      const dateOfFirstDeath = covidDataInstance.findDateOfFirstDeath(country, province);
+      const dateOfFirstDeath = covidDataInstance.findDateOfNthDeath(country, province, 1);
       currentDate = dateOfFirstDeath;
     }
     let day = 0;
@@ -81,7 +78,7 @@ class ChartDisplay extends Component {
         xAxisLabel,
         deaths * factor
       ]);
-      currentDate = this.getNextDate(currentDate);
+      currentDate = Utils.getNextDate(currentDate);
       day += 1;
     } while (covidDataInstance.formatDate(currentDate) !== covidDataInstance.formatDate(endDate));
     const formattedRow = {
