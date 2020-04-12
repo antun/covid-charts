@@ -34,7 +34,8 @@ class ChartDisplay extends Component {
     ],
     adjustments: {
       relativeToPopulation: true,
-      dateAlignmentType: 'exact'
+      dateAlignmentType: 'exact',
+      dateAlignmentOffset: 1
     },
     countries: [
 
@@ -61,7 +62,7 @@ class ChartDisplay extends Component {
       factor = 1000000/population;
     }
     if (this.state.adjustments.dateAlignmentType === 'firstdeath') {
-      const dateOfFirstDeath = covidDataInstance.findDateOfNthDeath(country, province, 1);
+      const dateOfFirstDeath = covidDataInstance.findDateOfNthDeath(country, province, this.state.adjustments.dateAlignmentOffset);
       currentDate = dateOfFirstDeath;
     }
     let day = 0;
@@ -146,6 +147,10 @@ class ChartDisplay extends Component {
     this.setState({adjustments: {...this.state.adjustments, dateAlignmentType: e.target.value}}, this.refreshChart);
   }
 
+  dateAlignmentOffsetHandler = e => {
+    this.setState({adjustments: {...this.state.adjustments, dateAlignmentOffset: e.target.value}}, this.refreshChart);
+  }
+
   refreshChart = () => {
     this.setState({chartData: this.makeChartData()});
   }
@@ -171,7 +176,9 @@ class ChartDisplay extends Component {
         </ControlsBox>
         <ControlsBox>
           <DateSelector dateAlignment={this.state.adjustments.dateAlignmentType} 
-                        onDateAlignmentTypeChange={this.dateAlignmentHandler} />
+                        onDateAlignmentTypeChange={this.dateAlignmentHandler}
+                        dateAlignmentOffset={this.state.adjustments.dateAlignmentOffset}
+                        onDateAlignmentOffsestChange={this.dateAlignmentOffsetHandler} />
         </ControlsBox>
       </React.Fragment>
     );
