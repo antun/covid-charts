@@ -7,11 +7,11 @@ import classes from './CountrySelector.module.css';
 
 const countrySelector = (props) => {
   const countries = props.countries.map(country => (
-    <Country key={country.name} country={country.name} onChange={(evt) => props.onCountrySelect(country.name, evt.target.checked)} checked={country.selected} />
+    <Country key={'country_'+country.Country_Region+'_'+country.Province_State} country={country} onChange={(evt) => props.onCountrySelect(country, evt.target.checked)} checked={country.selected} />
   ));
   const selectedCountries = props.countries.filter(country => ( country.selected === true)).map(
     country => (
-      <SelectedCountry key={country.name} country={country} unselectCountry={(e) => {props.onCountrySelect(country.name, false)}} />
+      <SelectedCountry key={'selected_' + country.Country_Region + '_' + country.Province_State } country={country} unselectCountry={(e) => {props.onCountrySelect(country, false)}} />
     )
   );
   return (
