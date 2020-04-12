@@ -20,8 +20,15 @@ const countryData = covidDataInstance.countryData();
 class ChartDisplay extends Component {
 
   state = {
-    initialCountries: ['US', 'France', 'United Kingdom', 'Italy', 'Germany', 'Japan'],
-    //initialCountries: ['US'],
+    initialCountries: [
+      {Country_Region: 'US', Province_State: ''},
+      {Country_Region: 'France', Province_State: ''},
+      {Country_Region: 'United Kingdom', Province_State: ''},
+      {Country_Region: 'Italy', Province_State: ''},
+      {Country_Region: 'Germany', Province_State: ''},
+      {Country_Region: 'Spain', Province_State: ''},
+      {Country_Region: 'Japan', Province_State: ''}
+    ],
     adjustments: {
       relativeToPopulation: true,
       dateAlignmentType: 'exact'
@@ -50,8 +57,8 @@ class ChartDisplay extends Component {
     return 1*countryData.filter(e => e.Country_Region === country)[0].Population;
   }
 
-  makeRowForChart = (country, startDate, endDate) => {
-    const row = covidData.filter(row => (row['Province/State'] === '' && row['Country/Region'] === country))[0];
+  makeRowForChart = (country, province, startDate, endDate) => {
+    const row = covidDataInstance.getCovidRowForCountry(country, province);
     const data = [];
     let currentDate = startDate;
     let factor = 1;
@@ -70,6 +77,9 @@ class ChartDisplay extends Component {
         xAxisLabel = day;
       }
       const deaths = row[this.formatDate(currentDate)];
+      if (!deaths) {
+        break;
+      }
       data.push([
         xAxisLabel,
         deaths * factor
@@ -103,35 +113,43 @@ class ChartDisplay extends Component {
     if (!this.state.initialCountries) {
       selectedCountries = this.state.countries.filter(el => {
         return el.selected === true;
-      }).map(el => el.name);
+      });
     } else {
-      // Only on first run
-      selectedCountries = this.state.initialCountries;
+      // Only on first run copy default countries
+      selectedCountries = countryData.filter(country => (
+        this.state.initialCountries.findIndex(initialCountry => (country.Country_Region === initialCountry.Country_Region && country.Province_State === initialCountry.Province_State)) > -1
+      ));
     }
-    const selectedCountriesRawData = countryData.filter(row => (selectedCountries.indexOf(row.Country_Region) > -1));
     // const startDate = new Date('2020-01-22');
     let startDate = new Date('2020-02-28');
     const endDate = new Date();
     endDate.setUTCHours(-1);
-    const data = selectedCountriesRawData.map((row) => {
-      return this.makeRowForChart(row.Country_Region, startDate, endDate);
+    const data = selectedCountries.map((row) => {
+      return this.makeRowForChart(row.Country_Region, row.Province_State, startDate, endDate);
     });
 
     return data;
   };
 
   getInitialCountryState = () => {
-    return countryData.map(el => ({ name: el.Country_Region, selected: this.state.initialCountries.indexOf(el.Country_Region) > -1}));
+    return countryData.map(el => (
+      {...el, selected: this.state.initialCountries.find(initialCountry => (
+        el.Country_Region === initialCountry.Country_Region
+          && el.Province_State === initialCountry.Province_State
+          )
+        ) !== undefined}
+      )
+    );
   };
 
   getSelectedCountries = () => {
-    return this.state.countries.filter(el => el.selected).map(el => el.name);
+    return this.state.countries.filter(el => el.selected);
   };
 
   countryCheckedHandler = (country, selected) => {
     const newResults = this.state.countries.filter((el, index) => {
       const newEl = el;
-      if (el.name === country) {
+      if (el.Country_Region === country.Country_Region && el.Province_State === country.Province_State) {
         newEl.selected = selected;
       }
       return newEl;
