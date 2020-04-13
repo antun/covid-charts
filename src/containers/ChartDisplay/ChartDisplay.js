@@ -186,7 +186,6 @@ class ChartDisplay extends Component {
   }
 
   dateAlignmentHandler = e => {
-    console.log('dateAlignmentHandler', e, this.getXAxisTitle());
     this.setState({adjustments: {
       ...this.state.adjustments,
       dateAlignmentType: e.target.value
@@ -218,7 +217,6 @@ class ChartDisplay extends Component {
   }
 
   render() {
-    console.log('render', this.state.adjustments.dateAlignmentType);
     return (
       <React.Fragment>
         <Chart data={this.state.chartData} xAxisTitle={this.state.xAxisTitle} yAxisTitle={this.state.yAxisTitle} 
