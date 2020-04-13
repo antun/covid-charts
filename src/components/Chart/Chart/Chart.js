@@ -11,9 +11,11 @@ const chart = (props) => {
       id: 'covidChart'
     },
     xaxis: {
-      type: 'numeric',
+      type: props.xAxisType,
       title: {
-        text: props.xAxisTitle
+        text: props.xAxisTitle,
+        offsetY: 11
+
       }
     },
     yaxis: {

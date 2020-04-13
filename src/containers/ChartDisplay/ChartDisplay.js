@@ -46,7 +46,8 @@ class ChartDisplay extends Component {
 
 
   formatDateForChartDisplay = (date) => {
-    return (date.getUTCMonth()+1) + '/' + date.getUTCDate()
+    // This will get converted by the chart
+    return 1900+date.getYear() + '-' + (date.getUTCMonth()+1) + '-' + date.getUTCDate()
   }
 
   getCountryPopulation = (country) => {
@@ -217,9 +218,11 @@ class ChartDisplay extends Component {
   }
 
   render() {
+    console.log('render', this.state.adjustments.dateAlignmentType);
     return (
       <React.Fragment>
-        <Chart data={this.state.chartData} xAxisTitle={this.state.xAxisTitle} yAxisTitle={this.state.yAxisTitle} />
+        <Chart data={this.state.chartData} xAxisTitle={this.state.xAxisTitle} yAxisTitle={this.state.yAxisTitle} 
+          xAxisType={this.state.adjustments.dateAlignmentType==='exact' ? 'datetime' : 'numeric'} />
         <ControlsBox>
           <CountrySelector countries={this.state.countries} onCountrySelect={this.countryCheckedHandler}/>
         </ControlsBox>
