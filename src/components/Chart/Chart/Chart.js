@@ -19,7 +19,7 @@ const chart = (props) => {
     yaxis: {
       decimalsInFloat: 0,
       title: {
-        text: props.yAxisLabel
+        text: props.yAxisTitle
       }
     },
     stroke: {

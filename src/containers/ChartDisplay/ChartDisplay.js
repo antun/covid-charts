@@ -40,7 +40,7 @@ class ChartDisplay extends Component {
     ],
     chartData: [],
     xAxisTitle: 'Date',
-    yAxisLabel: 'fixme'
+    yAxisTitle: 'Deaths / 1M Population'
 
   };
 
@@ -155,7 +155,23 @@ class ChartDisplay extends Component {
         label = `Days since ${dayCount}${ordinalSuffix} death `;
         break;
       default:
-        label = '-';
+        label = 'Date'
+        break;
+    }
+    return label;
+  }
+
+  getYAxisTitle = () => {
+    let label;
+    switch (this.state.adjustments.relativeToPopulation) {
+      case true:
+        label = 'Deaths / 1M population'
+        break;
+      case false:
+        label = 'Total Deaths'
+        break;
+      default:
+        label = 'Deaths / 1M population'
         break;
     }
     return label;
@@ -186,7 +202,8 @@ class ChartDisplay extends Component {
   refreshChart = () => {
     this.setState({
       chartData: this.makeChartData(), 
-      xAxisTitle: this.getXAxisTitle()
+      xAxisTitle: this.getXAxisTitle(),
+      yAxisTitle: this.getYAxisTitle()
     });
   }
   
@@ -202,7 +219,7 @@ class ChartDisplay extends Component {
   render() {
     return (
       <React.Fragment>
-        <Chart data={this.state.chartData} xAxisTitle={this.state.xAxisTitle} yAxisLabel={this.state.yAxisLabel} />
+        <Chart data={this.state.chartData} xAxisTitle={this.state.xAxisTitle} yAxisTitle={this.state.yAxisTitle} />
         <ControlsBox>
           <CountrySelector countries={this.state.countries} onCountrySelect={this.countryCheckedHandler}/>
         </ControlsBox>
