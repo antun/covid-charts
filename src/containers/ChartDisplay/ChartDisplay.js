@@ -15,10 +15,8 @@ import CovidData from '../../data/CovidData/CovidData';
 import * as Utils from '../../utils/utils';
 
 const covidDataInstance = new CovidData();
-const covidData = covidDataInstance.getCovidData();
-console.log('covidData', covidData);
+// const covidData = covidDataInstance.getCovidData();
 const countryData = covidDataInstance.countryData();
-
 
 class ChartDisplay extends Component {
 
@@ -40,7 +38,10 @@ class ChartDisplay extends Component {
     countries: [
 
     ],
-    chartData: []
+    chartData: [],
+    xAxisTitle: 'Date',
+    yAxisLabel: 'fixme'
+
   };
 
 
@@ -75,15 +76,15 @@ class ChartDisplay extends Component {
       if (!deaths) {
         break;
       }
-      data.push([
-        xAxisLabel,
-        deaths * factor
-      ]);
+      data.push({
+        x: xAxisLabel,
+        y: deaths * factor
+      });
       currentDate = Utils.getNextDate(currentDate);
       day += 1;
     } while (covidDataInstance.formatDate(currentDate) !== covidDataInstance.formatDate(endDate));
     const formattedRow = {
-      label: country,
+      name: country,
       data: data
     };
     return formattedRow;
@@ -136,23 +137,57 @@ class ChartDisplay extends Component {
       }
       return newEl;
     });
-    this.setState({countries: newResults, chartData: this.makeChartData()});
+    this.setState({
+      countries: newResults,
+      chartData: this.makeChartData()
+    });
   };
 
+  getXAxisTitle = () => {
+    let label;
+    switch (this.state.adjustments.dateAlignmentType) {
+      case 'exact':
+        label = 'Date';
+        break;
+      case 'firstdeath':
+        const dayCount = this.state.adjustments.dateAlignmentOffset;
+        const ordinalSuffix = Utils.getOrdinalSuffix(dayCount);
+        label = `Days since ${dayCount}${ordinalSuffix} death `;
+        break;
+      default:
+        label = '-';
+        break;
+    }
+    return label;
+  }
+
   populationHandler = (newValue) => {
-    this.setState({adjustments: {...this.state.adjustments, relativeToPopulation: newValue}}, this.refreshChart);
+    this.setState({adjustments: {
+      ...this.state.adjustments,
+      relativeToPopulation: newValue
+    }}, this.refreshChart);
   }
 
   dateAlignmentHandler = e => {
-    this.setState({adjustments: {...this.state.adjustments, dateAlignmentType: e.target.value}}, this.refreshChart);
+    console.log('dateAlignmentHandler', e, this.getXAxisTitle());
+    this.setState({adjustments: {
+      ...this.state.adjustments,
+      dateAlignmentType: e.target.value
+    }}, this.refreshChart);
   }
 
   dateAlignmentOffsetHandler = e => {
-    this.setState({adjustments: {...this.state.adjustments, dateAlignmentOffset: e.target.value}}, this.refreshChart);
+    this.setState({adjustments: {
+      ...this.state.adjustments,
+      dateAlignmentOffset: e.target.value
+    }}, this.refreshChart);
   }
 
   refreshChart = () => {
-    this.setState({chartData: this.makeChartData()});
+    this.setState({
+      chartData: this.makeChartData(), 
+      xAxisTitle: this.getXAxisTitle()
+    });
   }
   
   componentDidMount() {
@@ -167,7 +202,7 @@ class ChartDisplay extends Component {
   render() {
     return (
       <React.Fragment>
-        <Chart data={this.state.chartData} />
+        <Chart data={this.state.chartData} xAxisTitle={this.state.xAxisTitle} yAxisLabel={this.state.yAxisLabel} />
         <ControlsBox>
           <CountrySelector countries={this.state.countries} onCountrySelect={this.countryCheckedHandler}/>
         </ControlsBox>

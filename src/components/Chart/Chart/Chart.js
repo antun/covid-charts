@@ -2,14 +2,32 @@ import React from 'react';
 
 import classes from './Chart.module.css';
 
-import { Chart } from 'react-charts';
+import Chart from 'react-apexcharts';
 
 const chart = (props) => {
 
-  const axes = [
-    { primary: true, type: 'ordinal', position: 'bottom' },
-    { type: 'linear', position: 'left' }
-  ];
+  const options = {
+    chart: {
+      id: 'covidChart'
+    },
+    xaxis: {
+      type: 'numeric',
+      title: {
+        text: props.xAxisTitle
+      }
+    },
+    yaxis: {
+      decimalsInFloat: 0,
+      title: {
+        text: props.yAxisLabel
+      }
+    },
+    stroke: {
+      show: true,
+      width: 2,
+      dashArray: 0
+    }
+  };
 
   return (
     <div className={classes.Chart}
@@ -17,7 +35,8 @@ const chart = (props) => {
         width: '600px',
         height: '300px'
       }} >
-      <Chart data={props.data} axes={axes} tooltip />
+
+      <Chart options={options} series={props.data} type="line" height={320} />
     </div>
   );
 };
