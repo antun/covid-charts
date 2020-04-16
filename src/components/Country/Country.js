@@ -7,7 +7,7 @@ const country = (props) => {
   return(
     <li className={classes.Country}>
       <label>
-        <input type="checkbox" onChange={props.onChange} defaultChecked={props.checked} />
+        <input type="checkbox" onChange={props.onChange} checked={props.checked} />
         {props.country.Country_Region}
         {province}
       </label>
