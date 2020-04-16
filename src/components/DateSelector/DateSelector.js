@@ -18,14 +18,26 @@ const dateSelector = (props) => {
       </div>
       <div>
         <label>
-          <input type="radio" value="firstdeath"
-            checked={props.dateAlignment==='firstdeath'}  onChange={props.onDateAlignmentTypeChange}  />
+          <input type="radio" value="nthdeath"
+            checked={props.dateAlignment==='nthdeath'}  onChange={props.onDateAlignmentTypeChange}  />
           Match dates of&nbsp;
-          <input type="number" value={props.dateAlignmentOffset}
-            onChange={props.onDateAlignmentOffsestChange}
-            disabled={props.dateAlignment !== 'firstdeath'}
-            className={Classes.OffsetInput} />{getOrdinalSuffix(props.dateAlignmentOffset)}&nbsp;
+          <input type="number" value={props.dateAlignmentDeathOffset}
+            onChange={props.onDateAlignmentDeathOffsestChange}
+            disabled={props.dateAlignment !== 'nthdeath'}
+            className={Classes.OffsetInput} />{getOrdinalSuffix(props.dateAlignmentDeathOffset)}&nbsp;
           death
+        </label>
+      </div>
+      <div>
+        <label>
+          <input type="radio" value="nthcase"
+            checked={props.dateAlignment==='nthcase'}  onChange={props.onDateAlignmentTypeChange}  />
+          Match dates of&nbsp;
+          <input type="number" value={props.dateAlignmentCaseOffset}
+            onChange={props.onDateAlignmentCaseOffsestChange}
+            disabled={props.dateAlignment !== 'nthcase'}
+            className={Classes.OffsetInput} />{getOrdinalSuffix(props.dateAlignmentCaseOffset)}&nbsp;
+          confirmed case
         </label>
       </div>
     </div>

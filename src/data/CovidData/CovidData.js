@@ -1,11 +1,13 @@
-import rawCovidData from '../time_series_covid19_deaths_global.json';
+import rawDeathData from '../time_series_covid19_deaths_global.json';
+import rawConfirmedData from '../time_series_covid19_confirmed_global.json';
 import rawCountryData from '../UID_ISO_FIPS_LookUp_Table.json';
 import * as Utils from '../../utils/utils';
 
 class CovidData {
   constructor() {
     this.normalizedCountryData = this.normalizeCountryData(rawCountryData);
-    this.normalizedCovidData = this.normalizeCovidData(rawCovidData);
+    this.normalizedDeathData = this.normalizeTimeSeriesData(rawDeathData);
+    this.normalizedConfirmedData = this.normalizeTimeSeriesData(rawConfirmedData);
   }
 
   treatAsProvinces = [
@@ -41,17 +43,12 @@ class CovidData {
     return normalized;
   }
 
-  _getRawCovidRows(country, rawCovidData) {
-    const covidRows = rawCovidData.filter(el => el['Country/Region'] === country);
-    return covidRows;
-  }
-
-  _getRawCovidRow(country, province, rawCovidData) {
-    const covidRow = rawCovidData.filter(el => el['Country/Region'] === country && el['Province/State'] === province);
-    if (covidRow.length > 1) {
+  _getRawRow(country, province, rawDeathData) {
+    const deathRow = rawDeathData.filter(el => el['Country/Region'] === country && el['Province/State'] === province);
+    if (deathRow.length > 1) {
       console.warn('more than one row found for,', country, province);
     }
-    return covidRow[0];
+    return deathRow[0];
   }
 
   isDateColumn(key) {
@@ -59,17 +56,22 @@ class CovidData {
   }
 
   // Country_Region,Province_State
-  getCovidRowForCountry(country, province) {
-    const row = this.normalizedCovidData.filter(row => (row['Province/State'] === province && row['Country/Region'] === country))[0];
+  getDeathRowForCountry(country, province) {
+    const row = this.normalizedDeathData.filter(row => (row['Province/State'] === province && row['Country/Region'] === country))[0];
     return row;
   }
 
-  combineDataForCountries(covidRows) {
+  getConfirmedRowForCountry(country, province) {
+    const row = this.normalizedConfirmedData.filter(row => (row['Province/State'] === province && row['Country/Region'] === country))[0];
+    return row;
+  }
+
+  combineDataForCountries(deathRows) {
     // Find the main row
-    const countryRow = covidRows.filter(row => row['Province/State'] === '');
+    const countryRow = deathRows.filter(row => row['Province/State'] === '');
     let i;
-    for (i=0; i<covidRows.length; i++) {
-      const row = covidRows[i];
+    for (i=0; i<deathRows.length; i++) {
+      const row = deathRows[i];
       if (row['Province/State'] === '') {
         // This is the main country row
         continue;
@@ -83,21 +85,20 @@ class CovidData {
     return countryRow;
   }
 
-  normalizeCovidData(rawCovidData) {
+  normalizeTimeSeriesData(rawTimeSeriesData) {
     let normalized = [];
     let i;
     for (i=0; i<this.normalizedCountryData.length; i++) {
       const countryRow = this.normalizedCountryData[i];
       if (this.treatAsProvinces.indexOf(countryRow.Country_Region) === -1) {
-        // const covidRows = this._getRawCovidRows(countryRow.Country_Region, rawCovidData);
-        const covidRow = this._getRawCovidRow(countryRow.Country_Region, countryRow.Province_State, rawCovidData);
-        normalized.push(covidRow);
+        const row = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawTimeSeriesData);
+        normalized.push(row);
       } else {
         // This is a province
         if (countryRow.Province_State === '') {
           continue;
         }
-        const provinceRow = this._getRawCovidRow(countryRow.Country_Region, countryRow.Province_State, rawCovidData);
+        const provinceRow = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawTimeSeriesData);
         if (provinceRow) {
           normalized.push(provinceRow);
         } else {
@@ -112,8 +113,16 @@ class CovidData {
     return (date.getUTCMonth()+1) + '/' + date.getUTCDate() + '/' + (date.getUTCFullYear()-2000);
   }
 
-  findDateOfNthDeath (country, province, n) {
-    const row = this.normalizedCovidData.filter(el => el['Country/Region'] === country && el['Province/State'] === province)[0];
+  findDateOfNth (country, province, n, dataToUse) {
+    let data;
+    if (dataToUse === 'death') {
+      data = this.normalizedDeathData;
+    } else if (dataToUse === 'case') {
+      data = this.normalizedConfirmedData;
+    } else {
+      console.warn('Invalid data type:', dataToUse);
+    }
+    const row = data.filter(el => el['Country/Region'] === country && el['Province/State'] === province)[0];
     let currentDate = new Date('2020-01-22'); // Data begins on this date
     const endDate = new Date();
     endDate.setUTCHours(-1);
@@ -126,8 +135,8 @@ class CovidData {
     } while (this.formatDate(currentDate) !== this.formatDate(endDate));
   }
 
-  getCovidData () {
-    return this.normalizedCovidData;
+  getDeathData () {
+    return this.normalizedDeathData;
   }
 
   countryData () {
@@ -135,7 +144,5 @@ class CovidData {
   }
   
 }
-
-
 
 export default CovidData;
