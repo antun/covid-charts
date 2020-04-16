@@ -1,4 +1,5 @@
 import rawDeathData from '../time_series_covid19_deaths_global.json';
+import rawConfirmedData from '../time_series_covid19_confirmed_global.json';
 import rawCountryData from '../UID_ISO_FIPS_LookUp_Table.json';
 import * as Utils from '../../utils/utils';
 
@@ -6,6 +7,8 @@ class CovidData {
   constructor() {
     this.normalizedCountryData = this.normalizeCountryData(rawCountryData);
     this.normalizedDeathData = this.normalizeDeathData(rawDeathData);
+    // TODO: Rename the normalizeDeathData method if needed
+    this.normalizedConfirmedData = this.normalizeDeathData(rawConfirmedData);
   }
 
   treatAsProvinces = [
@@ -59,6 +62,11 @@ class CovidData {
     return row;
   }
 
+  getConfirmedRowForCountry(country, province) {
+    const row = this.normalizedConfirmedData.filter(row => (row['Province/State'] === province && row['Country/Region'] === country))[0];
+    return row;
+  }
+
   combineDataForCountries(deathRows) {
     // Find the main row
     const countryRow = deathRows.filter(row => row['Province/State'] === '');
@@ -106,8 +114,16 @@ class CovidData {
     return (date.getUTCMonth()+1) + '/' + date.getUTCDate() + '/' + (date.getUTCFullYear()-2000);
   }
 
-  findDateOfNthDeath (country, province, n) {
-    const row = this.normalizedDeathData.filter(el => el['Country/Region'] === country && el['Province/State'] === province)[0];
+  findDateOfNth (country, province, n, dataToUse) {
+    let data;
+    if (dataToUse === 'death') {
+      data = this.normalizedDeathData;
+    } else if (dataToUse === 'case') {
+      data = this.normalizedConfirmedData;
+    } else {
+      console.warn('Invalid data type:', dataToUse);
+    }
+    const row = data.filter(el => el['Country/Region'] === country && el['Province/State'] === province)[0];
     let currentDate = new Date('2020-01-22'); // Data begins on this date
     const endDate = new Date();
     endDate.setUTCHours(-1);

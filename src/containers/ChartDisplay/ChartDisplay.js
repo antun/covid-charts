@@ -32,7 +32,8 @@ class ChartDisplay extends Component {
     adjustments: {
       relativeToPopulation: true,
       dateAlignmentType: 'exact',
-      dateAlignmentOffset: 1
+      dateAlignmentDeathOffset: 1,
+      dateAlignmentCaseOffset: 1
     },
     countries: [
 
@@ -62,14 +63,18 @@ class ChartDisplay extends Component {
       const population = this.getCountryPopulation(country)
       factor = 1000000/population;
     }
-    if (this.state.adjustments.dateAlignmentType === 'firstdeath') {
-      const dateOfFirstDeath = covidDataInstance.findDateOfNthDeath(country, province, this.state.adjustments.dateAlignmentOffset);
+    if (this.state.adjustments.dateAlignmentType === 'nthdeath') {
+      const dateOfFirstDeath = covidDataInstance.findDateOfNth(country, province, this.state.adjustments.dateAlignmentDeathOffset, 'death');
       currentDate = dateOfFirstDeath;
+    } else if (this.state.adjustments.dateAlignmentType === 'nthcase') {
+      const dateOfFirstCase = covidDataInstance.findDateOfNth(country, province, this.state.adjustments.dateAlignmentCaseOffset, 'case');
+      currentDate = dateOfFirstCase;
     }
     let day = 0;
     do {
       let xAxisLabel = this.formatDateForChartDisplay(currentDate);
-      if (this.state.adjustments.dateAlignmentType === 'firstdeath') {
+      if (this.state.adjustments.dateAlignmentType === 'nthdeath'
+        || this.state.adjustments.dateAlignmentType === 'nthcase') {
         xAxisLabel = day;
       }
       const deaths = row[covidDataInstance.formatDate(currentDate)];
@@ -144,15 +149,20 @@ class ChartDisplay extends Component {
   };
 
   getXAxisTitle = () => {
-    let label;
+    let label, dayCount, ordinalSuffix;
     switch (this.state.adjustments.dateAlignmentType) {
       case 'exact':
         label = 'Date';
         break;
-      case 'firstdeath':
-        const dayCount = this.state.adjustments.dateAlignmentOffset;
-        const ordinalSuffix = Utils.getOrdinalSuffix(dayCount);
+      case 'nthdeath':
+        dayCount = this.state.adjustments.dateAlignmentDeathOffset;
+        ordinalSuffix = Utils.getOrdinalSuffix(dayCount);
         label = `Days since ${dayCount}${ordinalSuffix} death `;
+        break;
+      case 'nthcase':
+        dayCount = this.state.adjustments.dateAlignmentCaseOffset;
+        ordinalSuffix = Utils.getOrdinalSuffix(dayCount);
+        label = `Days since ${dayCount}${ordinalSuffix} confirmed case `;
         break;
       default:
         label = 'Date'
@@ -191,10 +201,17 @@ class ChartDisplay extends Component {
     }}, this.refreshChart);
   }
 
-  dateAlignmentOffsetHandler = e => {
+  dateAlignmentDeathOffsetHandler = e => {
     this.setState({adjustments: {
       ...this.state.adjustments,
-      dateAlignmentOffset: e.target.value
+      dateAlignmentDeathOffset: e.target.value
+    }}, this.refreshChart);
+  }
+
+  dateAlignmentCaseOffsetHandler = e => {
+    this.setState({adjustments: {
+      ...this.state.adjustments,
+      dateAlignmentCaseOffset: e.target.value
     }}, this.refreshChart);
   }
 
@@ -229,8 +246,10 @@ class ChartDisplay extends Component {
         <ControlsBox>
           <DateSelector dateAlignment={this.state.adjustments.dateAlignmentType} 
                         onDateAlignmentTypeChange={this.dateAlignmentHandler}
-                        dateAlignmentOffset={this.state.adjustments.dateAlignmentOffset}
-                        onDateAlignmentOffsestChange={this.dateAlignmentOffsetHandler} />
+                        dateAlignmentDeathOffset={this.state.adjustments.dateAlignmentDeathOffset}
+                        dateAlignmentCaseOffset={this.state.adjustments.dateAlignmentCaseOffset}
+                        onDateAlignmentDeathOffsestChange={this.dateAlignmentDeathOffsetHandler}
+                        onDateAlignmentCaseOffsestChange={this.dateAlignmentCaseOffsetHandler} />
         </ControlsBox>
       </React.Fragment>
     );
