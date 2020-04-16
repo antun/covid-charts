@@ -15,7 +15,6 @@ import CovidData from '../../data/CovidData/CovidData';
 import * as Utils from '../../utils/utils';
 
 const covidDataInstance = new CovidData();
-// const covidData = covidDataInstance.getCovidData();
 const countryData = covidDataInstance.countryData();
 
 class ChartDisplay extends Component {
@@ -55,7 +54,7 @@ class ChartDisplay extends Component {
   }
 
   makeRowForChart = (country, province, startDate, endDate) => {
-    const row = covidDataInstance.getCovidRowForCountry(country, province);
+    const row = covidDataInstance.getDeathRowForCountry(country, province);
     const data = [];
     let currentDate = startDate;
     let factor = 1;
