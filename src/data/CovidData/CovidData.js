@@ -6,9 +6,8 @@ import * as Utils from '../../utils/utils';
 class CovidData {
   constructor() {
     this.normalizedCountryData = this.normalizeCountryData(rawCountryData);
-    this.normalizedDeathData = this.normalizeDeathData(rawDeathData);
-    // TODO: Rename the normalizeDeathData method if needed
-    this.normalizedConfirmedData = this.normalizeDeathData(rawConfirmedData);
+    this.normalizedDeathData = this.normalizeTimeSeriesData(rawDeathData);
+    this.normalizedConfirmedData = this.normalizeTimeSeriesData(rawConfirmedData);
   }
 
   treatAsProvinces = [
@@ -44,7 +43,7 @@ class CovidData {
     return normalized;
   }
 
-  _getRawDeathRow(country, province, rawDeathData) {
+  _getRawRow(country, province, rawDeathData) {
     const deathRow = rawDeathData.filter(el => el['Country/Region'] === country && el['Province/State'] === province);
     if (deathRow.length > 1) {
       console.warn('more than one row found for,', country, province);
@@ -86,20 +85,20 @@ class CovidData {
     return countryRow;
   }
 
-  normalizeDeathData(rawDeathData) {
+  normalizeTimeSeriesData(rawTimeSeriesData) {
     let normalized = [];
     let i;
     for (i=0; i<this.normalizedCountryData.length; i++) {
       const countryRow = this.normalizedCountryData[i];
       if (this.treatAsProvinces.indexOf(countryRow.Country_Region) === -1) {
-        const deathRow = this._getRawDeathRow(countryRow.Country_Region, countryRow.Province_State, rawDeathData);
-        normalized.push(deathRow);
+        const row = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawTimeSeriesData);
+        normalized.push(row);
       } else {
         // This is a province
         if (countryRow.Province_State === '') {
           continue;
         }
-        const provinceRow = this._getRawDeathRow(countryRow.Country_Region, countryRow.Province_State, rawDeathData);
+        const provinceRow = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawTimeSeriesData);
         if (provinceRow) {
           normalized.push(provinceRow);
         } else {
