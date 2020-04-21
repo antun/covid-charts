@@ -16,3 +16,13 @@
   overflow-y: scroll;
   height: 300px;
 }
+
+@media only screen and (max-width: 768px) {
+  .CountrySelector {
+    width: 100%;
+  }
+
+  .SelectedContainer {
+    width: 100%;
+  }
+}

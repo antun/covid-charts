@@ -35,12 +35,7 @@ const chart = (props) => {
   };
 
   return (
-    <div className={classes.Chart}
-      style={{
-        width: '600px',
-        height: '300px'
-      }} >
-
+    <div className={classes.Chart}>
       <Chart options={options} series={props.data} type="line" height={320} />
     </div>
   );

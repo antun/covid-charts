@@ -8,7 +8,7 @@ const dateSelector = (props) => {
   return (
     <div>
       <h3>Date Adjustments</h3>
-      <div>
+      <div className={Classes.radioRow}>
         <label>
           <input type="radio" value="exact"
             checked={props.dateAlignment==='exact'}
@@ -16,7 +16,7 @@ const dateSelector = (props) => {
           None
         </label>
       </div>
-      <div>
+      <div className={Classes.radioRow}>
         <label>
           <input type="radio" value="nthdeath"
             checked={props.dateAlignment==='nthdeath'}  onChange={props.onDateAlignmentTypeChange}  />
@@ -28,7 +28,7 @@ const dateSelector = (props) => {
           death
         </label>
       </div>
-      <div>
+      <div className={Classes.radioRow}>
         <label>
           <input type="radio" value="nthcase"
             checked={props.dateAlignment==='nthcase'}  onChange={props.onDateAlignmentTypeChange}  />

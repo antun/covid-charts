@@ -1,3 +1,10 @@
 .PopulationSelector {
   width: 200px;
 }
+
+@media only screen and (max-width: 768px) {
+  .PopulationSelector {
+    width: 100%;
+  }
+}
+

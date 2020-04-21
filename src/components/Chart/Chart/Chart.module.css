@@ -1,4 +1,14 @@
 .Chart {
   display: inline-block;
   vertical-align: top;
+  width: 600px;
+  height: 320px;
+
 }
+
+@media only screen and (max-width: 768px) {
+  .Chart {
+    width: 100%;
+  }
+}
+
