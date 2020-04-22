@@ -146,6 +146,12 @@ class ChartDisplay extends Component {
       countries: newResults,
       chartData: this.makeChartData()
     });
+    let countryLabel = country.Province_State ? ' ('+country.Province_State+')' : '';
+    countryLabel = country.Country_Region + countryLabel;
+    window.gtag('event', 'select', {
+      event_category: 'Country',
+      event_label: countryLabel
+    });
   };
 
   getXAxisTitle = () => {
@@ -188,6 +194,10 @@ class ChartDisplay extends Component {
   }
 
   populationHandler = (newValue) => {
+    window.gtag('event', 'select', {
+      event_category: 'Population',
+      event_label: newValue
+    });
     this.setState({adjustments: {
       ...this.state.adjustments,
       relativeToPopulation: newValue
@@ -199,6 +209,10 @@ class ChartDisplay extends Component {
       ...this.state.adjustments,
       dateAlignmentType: e.target.value
     }}, this.refreshChart);
+    window.gtag('event', 'select', {
+      event_category: 'Date Alignment',
+      event_label: e.target.value
+    });
   }
 
   dateAlignmentDeathOffsetHandler = e => {
@@ -206,6 +220,10 @@ class ChartDisplay extends Component {
       ...this.state.adjustments,
       dateAlignmentDeathOffset: e.target.value
     }}, this.refreshChart);
+    window.gtag('event', 'change', {
+      event_category: 'Date Alignment Death Offset',
+      event_label: e.target.value
+    });
   }
 
   dateAlignmentCaseOffsetHandler = e => {
@@ -213,6 +231,10 @@ class ChartDisplay extends Component {
       ...this.state.adjustments,
       dateAlignmentCaseOffset: e.target.value
     }}, this.refreshChart);
+    window.gtag('event', 'change', {
+      event_category: 'Date Alignment Case Offset',
+      event_label: e.target.value
+    });
   }
 
   refreshChart = () => {
