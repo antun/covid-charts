@@ -1,5 +1,6 @@
 .Country {
   padding: 8px;
+  height: 20px;
 }
 
 .Country input {
@@ -8,4 +9,14 @@
 
 .Country label {
   margin: 0px 20px 0px 3px;
+}
+
+.Population {
+  margin-left: 7px;
+  font-size: 9px;
+  color: #666666;
+}
+
+.Province {
+  font-size: 12px;
 }
