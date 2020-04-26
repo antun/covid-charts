@@ -32,5 +32,7 @@ const downloadCsvAndConvertToJson = (href, filename) => {
 };
 
 downloadCsvAndConvertToJson(timeSeriesGlobalDeathsUrl, 'time_series_covid19_deaths_global');
+downloadCsvAndConvertToJson(timeSeriesUsDeathsUrl, 'time_series_covid19_deaths_US');
 downloadCsvAndConvertToJson(timeSeriesConfirmedGlobalUrl, 'time_series_covid19_confirmed_global');
+downloadCsvAndConvertToJson(timeSeriesConfirmedUsUrl, 'time_series_covid19_confirmed_US');
 downloadCsvAndConvertToJson(countryLookupTableURL, 'UID_ISO_FIPS_LookUp_Table');
