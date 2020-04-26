@@ -1,22 +1,25 @@
-import rawDeathData from '../time_series_covid19_deaths_global.json';
-import rawConfirmedData from '../time_series_covid19_confirmed_global.json';
+import rawGlobalDeathData from '../time_series_covid19_deaths_global.json';
+import rawUSDeathData from '../time_series_covid19_deaths_US.json';
+import rawGlobalConfirmedData from '../time_series_covid19_confirmed_global.json';
+import rawUSConfirmedData from '../time_series_covid19_confirmed_US.json';
 import rawCountryData from '../UID_ISO_FIPS_LookUp_Table.json';
+import usStates from './config.usstates.js';
 import * as Utils from '../../utils/utils';
 
 class CovidData {
   constructor() {
     this.normalizedCountryData = this.normalizeCountryData(rawCountryData);
-    this.normalizedDeathData = this.normalizeTimeSeriesData(rawDeathData);
-    this.normalizedConfirmedData = this.normalizeTimeSeriesData(rawConfirmedData);
+    this.normalizedDeathData = this.normalizeTimeSeriesData(rawGlobalDeathData, rawUSDeathData);
+    console.log('normalizedDeathData', this.normalizedDeathData);
+    // TODO: Uncomment:
+    this.normalizedConfirmedData = this.normalizeTimeSeriesData(rawGlobalConfirmedData, rawUSConfirmedData);
+    console.log('normalizedConfirmedData', this.normalizedConfirmedData);
   }
 
   treatAsProvinces = [
     'Australia',
     'Canada',
     'China'
-  ];
-
-  rollupCountries = [
   ];
 
   normalizeCountryData(rawCountryData) {
@@ -28,7 +31,11 @@ class CovidData {
         // Skip countries that we're treating as provinces but that also have a country line
         continue;
       }
-      if (el.Country_Region === 'US' && (el.Province_State !== '' || el.Admin2 !== '')) {
+      if (el.Country_Region === 'US' && (el.Province_State !== '' &&  usStates.indexOf(el.Province_State) === -1)) {
+        // Skip any non-State US entities
+        continue;
+      }
+      if (el.Country_Region === 'US' && (el.Admin2 !== '')) {
         // Clear any that have non-blank Admin2 values. These seem to be
         // counties in the US
         continue;
@@ -43,15 +50,21 @@ class CovidData {
     return normalized;
   }
 
-  _getRawRow(country, province, rawDeathData) {
-    const deathRow = rawDeathData.filter(el => el['Country/Region'] === country && el['Province/State'] === province);
+  _getRawRow(country, province, rawGlobalDeathData) {
+    const deathRow = rawGlobalDeathData.filter(el => el['Country/Region'] === country && el['Province/State'] === province);
     if (deathRow.length > 1) {
       console.warn('more than one row found for,', country, province);
     }
     return deathRow[0];
   }
 
-  isDateColumn(key) {
+  // For some reason, the US data has different headings than the global data
+  _getRawUSRows(country, province, rawUSDeathData) {
+    const deathRow = rawUSDeathData.filter(el => el['Country_Region'] === country && el['Province_State'] === province);
+    return deathRow;
+  }
+
+  _isDateColumn(key) {
     return key.match(/[0-9]+\/[0-9]+\/[0-9]+/);
   }
 
@@ -66,39 +79,65 @@ class CovidData {
     return row;
   }
 
-  combineDataForCountries(deathRows) {
-    // Find the main row
-    const countryRow = deathRows.filter(row => row['Province/State'] === '');
+  _combineDataForState(countyRows, stateName) {
+    const stateRow = {
+      Admin2: '',
+      Combined_Key: stateName + ', US',
+      Country_Region: 'US',
+      FIPS: null,
+      Lat: null,
+      Long_: null,
+      Population: 0,
+      Province_State: stateName,
+      UID: '',
+      code3: '',
+      iso2: 'US',
+      iso3: 'USA'
+    };
     let i;
-    for (i=0; i<deathRows.length; i++) {
-      const row = deathRows[i];
-      if (row['Province/State'] === '') {
-        // This is the main country row
-        continue;
-      }
+    for (i=0; i<countyRows.length; i++) {
+      const row = countyRows[i];
       for (let k in row) {
-        if (this.isDateColumn(k)) {
-          countryRow[k] = countryRow[k] * 1 + row[k] * 1;
+        if (this._isDateColumn(k)) {
+          if (stateRow[k]) {
+            stateRow[k] = stateRow[k] + row[k] * 1;
+          } else {
+            stateRow[k] = row[k] * 1;
+          }
+        } else if (k === 'Population') {
+            stateRow[k] = stateRow[k] + row[k] * 1;
         }
       }
     }
-    return countryRow;
+    return stateRow;
   }
 
-  normalizeTimeSeriesData(rawTimeSeriesData) {
+  normalizeTimeSeriesData(rawGlobalTimeSeriesData, rawUSTimeSeriesData) {
     let normalized = [];
     let i;
     for (i=0; i<this.normalizedCountryData.length; i++) {
       const countryRow = this.normalizedCountryData[i];
       if (this.treatAsProvinces.indexOf(countryRow.Country_Region) === -1) {
-        const row = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawTimeSeriesData);
+        // Regular country (or US state)
+        let row;
+        if (countryRow.Country_Region === 'US' && countryRow.Province_State !== '') {
+          // US State
+          console.log('Working on', countryRow.Province_State, countryRow);
+          const counties = this._getRawUSRows(countryRow.Country_Region, countryRow.Province_State, rawUSTimeSeriesData);
+          row = this._combineDataForState(counties, countryRow.Province_State);
+          console.log('Found', counties.length, 'counties for', countryRow.Province_State);
+          console.log('State row for', countryRow.Province_State, row);
+        } else {
+          // Regular country
+          row = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawGlobalTimeSeriesData);
+        }
         normalized.push(row);
       } else {
         // This is a province
         if (countryRow.Province_State === '') {
           continue;
         }
-        const provinceRow = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawTimeSeriesData);
+        const provinceRow = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawGlobalTimeSeriesData);
         if (provinceRow) {
           normalized.push(provinceRow);
         } else {
