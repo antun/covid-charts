@@ -84,8 +84,12 @@ class ChartDisplay extends Component {
       currentDate = Utils.getNextDate(currentDate);
       day += 1;
     } while (covidDataInstance.formatDate(currentDate) !== covidDataInstance.formatDate(endDate));
+    let legendLabel = country;
+    if (province !== '') {
+      legendLabel += ' ('+province+')';
+    }
     const formattedRow = {
-      name: country,
+      name: legendLabel,
       data: data
     };
     return formattedRow;

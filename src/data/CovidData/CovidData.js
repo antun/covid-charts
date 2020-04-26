@@ -10,10 +10,7 @@ class CovidData {
   constructor() {
     this.normalizedCountryData = this.normalizeCountryData(rawCountryData);
     this.normalizedDeathData = this.normalizeTimeSeriesData(rawGlobalDeathData, rawUSDeathData);
-    console.log('normalizedDeathData', this.normalizedDeathData);
-    // TODO: Uncomment:
     this.normalizedConfirmedData = this.normalizeTimeSeriesData(rawGlobalConfirmedData, rawUSConfirmedData);
-    console.log('normalizedConfirmedData', this.normalizedConfirmedData);
   }
 
   treatAsProvinces = [
@@ -127,12 +124,9 @@ class CovidData {
         // Regular country (or US state)
         let row;
         if (countryRow.Country_Region === 'US' && countryRow.Province_State !== '') {
-          // US State
-          console.log('Working on', countryRow.Province_State, countryRow);
+          // US State - needs to be rolled-up
           const counties = this._getRawUSRows(countryRow.Country_Region, countryRow.Province_State, rawUSTimeSeriesData);
           row = this._combineDataForState(counties, countryRow.Province_State);
-          console.log('Found', counties.length, 'counties for', countryRow.Province_State);
-          console.log('State row for', countryRow.Province_State, row);
         } else {
           // Regular country
           row = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawGlobalTimeSeriesData);
