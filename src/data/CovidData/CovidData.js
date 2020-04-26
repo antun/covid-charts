@@ -79,16 +79,22 @@ class CovidData {
     return row;
   }
 
+  getCountryPopulation = (country, province) => {
+    return 1*this.normalizedCountryData.filter(e => (e.Country_Region === country && e.Province_State === province))[0].Population;
+  }
+
   _combineDataForState(countyRows, stateName) {
     const stateRow = {
       Admin2: '',
       Combined_Key: stateName + ', US',
       Country_Region: 'US',
+      'Country/Region': 'US',
       FIPS: null,
       Lat: null,
       Long_: null,
       Population: 0,
       Province_State: stateName,
+      'Province/State': stateName,
       UID: '',
       code3: '',
       iso2: 'US',
