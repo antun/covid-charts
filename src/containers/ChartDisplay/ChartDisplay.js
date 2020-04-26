@@ -50,17 +50,13 @@ class ChartDisplay extends Component {
     return 1900+date.getYear() + '-' + (date.getUTCMonth()+1) + '-' + date.getUTCDate()
   }
 
-  getCountryPopulation = (country) => {
-    return 1*countryData.filter(e => e.Country_Region === country)[0].Population;
-  }
-
   makeRowForChart = (country, province, startDate, endDate) => {
     const row = covidDataInstance.getDeathRowForCountry(country, province);
     const data = [];
     let currentDate = startDate;
     let factor = 1;
     if (this.state.adjustments.relativeToPopulation) {
-      const population = this.getCountryPopulation(country)
+      const population = covidDataInstance.getCountryPopulation(country, province)
       factor = 1000000/population;
     }
     if (this.state.adjustments.dateAlignmentType === 'nthdeath') {
@@ -77,10 +73,10 @@ class ChartDisplay extends Component {
         || this.state.adjustments.dateAlignmentType === 'nthcase') {
         xAxisLabel = day;
       }
-      const deaths = row[covidDataInstance.formatDate(currentDate)];
-      if (!deaths) {
+      if (!row.hasOwnProperty(covidDataInstance.formatDate(currentDate))) {
         break;
       }
+      const deaths = parseInt(row[covidDataInstance.formatDate(currentDate)]);
       data.push({
         x: xAxisLabel,
         y: deaths * factor
@@ -88,8 +84,12 @@ class ChartDisplay extends Component {
       currentDate = Utils.getNextDate(currentDate);
       day += 1;
     } while (covidDataInstance.formatDate(currentDate) !== covidDataInstance.formatDate(endDate));
+    let legendLabel = country;
+    if (province !== '') {
+      legendLabel += ' ('+province+')';
+    }
     const formattedRow = {
-      name: country,
+      name: legendLabel,
       data: data
     };
     return formattedRow;
