@@ -4,7 +4,7 @@ import Chart from '../../components/Chart/Chart/Chart';
 
 import CountrySelector from '../../components/CountrySelector/CountrySelector';
 
-import PopulationSelector from '../../components/PopulationSelector/PopulationSelector';
+import DataPopSelector from '../../components/DataPopSelector/DataPopSelector';
 
 import DateSelector from '../../components/DateSelector/DateSelector';
 
@@ -263,7 +263,7 @@ class ChartDisplay extends Component {
           <CountrySelector countries={this.state.countries} onCountrySelect={this.countryCheckedHandler}/>
         </ControlsBox>
         <ControlsBox>
-          <PopulationSelector relative={this.state.adjustments.relativeToPopulation} onSelect={this.populationHandler} />
+          <DataPopSelector relative={this.state.adjustments.relativeToPopulation} onSelect={this.populationHandler} />
         </ControlsBox>
         <ControlsBox>
           <DateSelector dateAlignment={this.state.adjustments.dateAlignmentType} 

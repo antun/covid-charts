@@ -2,10 +2,10 @@ import React from 'react';
 
 import Switch from 'react-switch';
 
-import classes from './PopulationSelector.module.css';
+import classes from './DataPopSelector.module.css';
 
 
-const populationSelector = (props) => {
+const dataPopSelector = (props) => {
   const msg = props.relative ? 'Showing statistics relative to population size' : 'Showing absolute statistics';
 
   return (
@@ -22,4 +22,4 @@ const populationSelector = (props) => {
 };
 
 
-export default populationSelector;
+export default dataPopSelector;

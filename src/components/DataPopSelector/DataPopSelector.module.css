@@ -1,9 +1,9 @@
-.PopulationSelector {
+.DataPopSelector {
   width: 200px;
 }
 
 @media only screen and (max-width: 768px) {
-  .PopulationSelector {
+  .DataPopSelector {
     width: 100%;
   }
 }
