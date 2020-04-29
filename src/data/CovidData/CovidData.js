@@ -4,6 +4,7 @@ import rawGlobalConfirmedData from '../time_series_covid19_confirmed_global.json
 import rawUSConfirmedData from '../time_series_covid19_confirmed_US.json';
 import rawCountryData from '../UID_ISO_FIPS_LookUp_Table.json';
 import usStates from './config.usstates.js';
+import dataAsProvinces from './config.dataasprovinces.js';
 import * as Utils from '../../utils/utils';
 
 class CovidData {
@@ -13,23 +14,20 @@ class CovidData {
     this.normalizedConfirmedData = this.normalizeTimeSeriesData(rawGlobalConfirmedData, rawUSConfirmedData);
   }
 
-  treatAsProvinces = [
-    'Australia',
-    'Canada',
-    'China'
-  ];
 
   normalizeCountryData(rawCountryData) {
     let normalized = [];
     let i;
     for (i=0; i<rawCountryData.length; i++) {
       let el = rawCountryData[i];
-      if (this.treatAsProvinces.indexOf(el.Country_Region) > -1 && el.Province_State === '' ) {
-        // Skip countries that we're treating as provinces but that also have a country line
-        continue;
-      }
       if (el.Country_Region === 'US' && (el.Province_State !== '' &&  usStates.indexOf(el.Province_State) === -1)) {
         // Skip any non-State US entities
+        continue;
+      }
+      if (dataAsProvinces.hasOwnProperty(el.Country_Region) && el.Province_State !== '' && dataAsProvinces[el.Country_Region].indexOf(el.Province_State) === -1) {
+        // Skip any that belong to countries for which we get province data,
+        // and the province is not a real province - e.g. there were some
+        // cruise ships for Canada
         continue;
       }
       if (el.Country_Region === 'US' && (el.Admin2 !== '')) {
@@ -53,6 +51,11 @@ class CovidData {
       console.warn('more than one row found for,', country, province);
     }
     return deathRow[0];
+  }
+
+  _getRawRows(country, rawTimeSeriesData) {
+    const rows = rawTimeSeriesData.filter(el => el['Country/Region'] === country && el['Province/State'] !== '');
+    return rows;
   }
 
   // For some reason, the US data has different headings than the global data
@@ -115,12 +118,47 @@ class CovidData {
     return stateRow;
   }
 
+  _combineDataForCountry(provinceRows, countryName) {
+    const countryRow = {
+      Admin2: '',
+      Combined_Key: countryName,
+      Country_Region: countryName,
+      'Country/Region': countryName,
+      FIPS: null,
+      Lat: null,
+      Long_: null,
+      Population: 0,
+      Province_State: '',
+      'Province/State': '',
+      UID: '',
+      code3: '',
+      iso2: '--',
+      iso3: '---'
+    };
+    let i;
+    for (i=0; i<provinceRows.length; i++) {
+      const row = provinceRows[i];
+      for (let k in row) {
+        if (this._isDateColumn(k)) {
+          if (countryRow[k]) {
+            countryRow[k] = countryRow[k] + row[k] * 1;
+          } else {
+            countryRow[k] = row[k] * 1;
+          }
+        } else if (k === 'Population') {
+            countryRow[k] = countryRow[k] + row[k] * 1;
+        }
+      }
+    }
+    return countryRow;
+  }
+
   normalizeTimeSeriesData(rawGlobalTimeSeriesData, rawUSTimeSeriesData) {
     let normalized = [];
     let i;
     for (i=0; i<this.normalizedCountryData.length; i++) {
       const countryRow = this.normalizedCountryData[i];
-      if (this.treatAsProvinces.indexOf(countryRow.Country_Region) === -1) {
+      if (!dataAsProvinces.hasOwnProperty(countryRow.Country_Region)) {
         // Regular country (or US state)
         let row;
         if (countryRow.Country_Region === 'US' && countryRow.Province_State !== '') {
@@ -133,13 +171,18 @@ class CovidData {
         }
         normalized.push(row);
       } else {
-        // This is a province
-        if (countryRow.Province_State === '') {
-          continue;
+        // Country for which only province info is provided
+        let row;
+        if (countryRow.Province_State !== '') {
+          // Province
+          row = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawGlobalTimeSeriesData);
+        } else {
+          // Top-level entity (e.g. Canada) - roll-up
+          const provinces = this._getRawRows(countryRow.Country_Region, rawGlobalTimeSeriesData);
+          row = this._combineDataForCountry(provinces, countryRow.Country_Region);
         }
-        const provinceRow = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawGlobalTimeSeriesData);
-        if (provinceRow) {
-          normalized.push(provinceRow);
+        if (row) {
+          normalized.push(row);
         } else {
           console.warn('Could not find province row for', countryRow.Country_Region, countryRow.Province_State);
         }
