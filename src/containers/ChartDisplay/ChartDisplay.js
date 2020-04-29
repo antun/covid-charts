@@ -4,7 +4,7 @@ import Chart from '../../components/Chart/Chart/Chart';
 
 import CountrySelector from '../../components/CountrySelector/CountrySelector';
 
-import PopulationSelector from '../../components/PopulationSelector/PopulationSelector';
+import DataPopSelector from '../../components/DataPopSelector/DataPopSelector';
 
 import DateSelector from '../../components/DateSelector/DateSelector';
 
@@ -30,6 +30,7 @@ class ChartDisplay extends Component {
       {Country_Region: 'Japan', Province_State: ''}
     ],
     adjustments: {
+      dataToShow: 'deaths',
       relativeToPopulation: true,
       dateAlignmentType: 'exact',
       dateAlignmentDeathOffset: 1,
@@ -51,7 +52,12 @@ class ChartDisplay extends Component {
   }
 
   makeRowForChart = (country, province, startDate, endDate) => {
-    const row = covidDataInstance.getDeathRowForCountry(country, province);
+    let row;
+    if (this.state.adjustments.dataToShow === 'deaths') {
+      row = covidDataInstance.getDeathRowForCountry(country, province);
+    } else {
+      row = covidDataInstance.getConfirmedRowForCountry(country, province);
+    }
     const data = [];
     let currentDate = startDate;
     let factor = 1;
@@ -178,16 +184,22 @@ class ChartDisplay extends Component {
   }
 
   getYAxisTitle = () => {
-    let label;
+    let label,
+      data;
+    data = 'Deaths';
+    if (this.state.adjustments.dataToShow === 'confirmed') {
+      data = 'Confirmed Cases'
+    }
+
     switch (this.state.adjustments.relativeToPopulation) {
       case true:
-        label = 'Deaths / 1M population'
+        label = data + ' / 1M Population'
         break;
       case false:
-        label = 'Total Deaths'
+        label = 'Total ' + data
         break;
       default:
-        label = 'Deaths / 1M population'
+        label = data + ' / 1M Population'
         break;
     }
     return label;
@@ -202,7 +214,18 @@ class ChartDisplay extends Component {
       ...this.state.adjustments,
       relativeToPopulation: newValue
     }}, this.refreshChart);
-  }
+  };
+
+  dataToShowHandler = (e) => {
+    window.gtag('event', 'select', {
+      event_category: 'Data to Show',
+      event_label: e.target.value
+    });
+    this.setState({adjustments: {
+      ...this.state.adjustments,
+      dataToShow: e.target.value
+    }}, this.refreshChart);
+  };
 
   dateAlignmentHandler = e => {
     this.setState({adjustments: {
@@ -263,7 +286,10 @@ class ChartDisplay extends Component {
           <CountrySelector countries={this.state.countries} onCountrySelect={this.countryCheckedHandler}/>
         </ControlsBox>
         <ControlsBox>
-          <PopulationSelector relative={this.state.adjustments.relativeToPopulation} onSelect={this.populationHandler} />
+          <DataPopSelector relative={this.state.adjustments.relativeToPopulation}
+            onSelect={this.populationHandler}
+            dataToShow={this.state.adjustments.dataToShow}
+            onDataChanged={this.dataToShowHandler} />
         </ControlsBox>
         <ControlsBox>
           <DateSelector dateAlignment={this.state.adjustments.dateAlignmentType} 

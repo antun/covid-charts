@@ -1,0 +1,16 @@
+.DataPopSelector {
+  width: 200px;
+}
+
+@media only screen and (max-width: 768px) {
+  .DataPopSelector {
+    width: 100%;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .radioRow {
+    margin-top: 10px;
+    margin-bottom: 5px;
+  }
+}
