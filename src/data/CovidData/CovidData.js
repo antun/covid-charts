@@ -4,6 +4,7 @@ import rawGlobalConfirmedData from '../time_series_covid19_confirmed_global.json
 import rawUSConfirmedData from '../time_series_covid19_confirmed_US.json';
 import rawCountryData from '../UID_ISO_FIPS_LookUp_Table.json';
 import usStates from './config.usstates.js';
+import dataAsProvinces from './config.dataasprovinces.js';
 import * as Utils from '../../utils/utils';
 
 class CovidData {
@@ -13,11 +14,6 @@ class CovidData {
     this.normalizedConfirmedData = this.normalizeTimeSeriesData(rawGlobalConfirmedData, rawUSConfirmedData);
   }
 
-  treatAsProvinces = [
-    'Australia',
-    'Canada',
-    'China'
-  ];
 
   normalizeCountryData(rawCountryData) {
     let normalized = [];
@@ -26,6 +22,12 @@ class CovidData {
       let el = rawCountryData[i];
       if (el.Country_Region === 'US' && (el.Province_State !== '' &&  usStates.indexOf(el.Province_State) === -1)) {
         // Skip any non-State US entities
+        continue;
+      }
+      if (dataAsProvinces.hasOwnProperty(el.Country_Region) && el.Province_State !== '' && dataAsProvinces[el.Country_Region].indexOf(el.Province_State) === -1) {
+        // Skip any that belong to countries for which we get province data,
+        // and the province is not a real province - e.g. there were some
+        // cruise ships for Canada
         continue;
       }
       if (el.Country_Region === 'US' && (el.Admin2 !== '')) {
@@ -156,7 +158,7 @@ class CovidData {
     let i;
     for (i=0; i<this.normalizedCountryData.length; i++) {
       const countryRow = this.normalizedCountryData[i];
-      if (this.treatAsProvinces.indexOf(countryRow.Country_Region) === -1) {
+      if (!dataAsProvinces.hasOwnProperty(countryRow.Country_Region)) {
         // Regular country (or US state)
         let row;
         if (countryRow.Country_Region === 'US' && countryRow.Province_State !== '') {
@@ -176,12 +178,8 @@ class CovidData {
           row = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawGlobalTimeSeriesData);
         } else {
           // Top-level entity (e.g. Canada) - roll-up
-          console.log('countryRow', countryRow.Country_Region);
-          // TODO: Roll-up here
           const provinces = this._getRawRows(countryRow.Country_Region, rawGlobalTimeSeriesData);
-          console.log('provinces', provinces);
           row = this._combineDataForCountry(provinces, countryRow.Country_Region);
-          console.log('combined', row);
         }
         if (row) {
           normalized.push(row);
