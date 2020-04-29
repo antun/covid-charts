@@ -1,4 +1,8 @@
 .Header {
+  background-image: url('header.png');
+  background-repeat: no-repeat;
+  background-position: center;
+
   background-color: #282c34;
   display: flex;
   flex-direction: column;
@@ -11,10 +15,12 @@
 h1 {
   margin-block-start: 0.5em;
   margin-block-end: 0.25em;
+  text-shadow: 5px 5px #4a2323;
 }
 
 .tagline {
   margin-block-start: 0.75em;
   margin-block-end: 0.75em;
   text-align: center;
+  text-shadow: 2px 2px #4a2323;
 }

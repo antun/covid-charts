@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Covid Charts",
+  "name": "Population-relative charts on the novel Coronavirus.",
   "icons": [
     {
       "src": "favicon.ico",
