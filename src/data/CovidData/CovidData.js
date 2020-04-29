@@ -24,10 +24,6 @@ class CovidData {
     let i;
     for (i=0; i<rawCountryData.length; i++) {
       let el = rawCountryData[i];
-      if (this.treatAsProvinces.indexOf(el.Country_Region) > -1 && el.Province_State === '' ) {
-        // Skip countries that we're treating as provinces but that also have a country line
-        continue;
-      }
       if (el.Country_Region === 'US' && (el.Province_State !== '' &&  usStates.indexOf(el.Province_State) === -1)) {
         // Skip any non-State US entities
         continue;
@@ -53,6 +49,11 @@ class CovidData {
       console.warn('more than one row found for,', country, province);
     }
     return deathRow[0];
+  }
+
+  _getRawRows(country, rawTimeSeriesData) {
+    const rows = rawTimeSeriesData.filter(el => el['Country/Region'] === country && el['Province/State'] !== '');
+    return rows;
   }
 
   // For some reason, the US data has different headings than the global data
@@ -115,6 +116,41 @@ class CovidData {
     return stateRow;
   }
 
+  _combineDataForCountry(provinceRows, countryName) {
+    const countryRow = {
+      Admin2: '',
+      Combined_Key: countryName,
+      Country_Region: countryName,
+      'Country/Region': countryName,
+      FIPS: null,
+      Lat: null,
+      Long_: null,
+      Population: 0,
+      Province_State: '',
+      'Province/State': '',
+      UID: '',
+      code3: '',
+      iso2: '--',
+      iso3: '---'
+    };
+    let i;
+    for (i=0; i<provinceRows.length; i++) {
+      const row = provinceRows[i];
+      for (let k in row) {
+        if (this._isDateColumn(k)) {
+          if (countryRow[k]) {
+            countryRow[k] = countryRow[k] + row[k] * 1;
+          } else {
+            countryRow[k] = row[k] * 1;
+          }
+        } else if (k === 'Population') {
+            countryRow[k] = countryRow[k] + row[k] * 1;
+        }
+      }
+    }
+    return countryRow;
+  }
+
   normalizeTimeSeriesData(rawGlobalTimeSeriesData, rawUSTimeSeriesData) {
     let normalized = [];
     let i;
@@ -133,13 +169,22 @@ class CovidData {
         }
         normalized.push(row);
       } else {
-        // This is a province
-        if (countryRow.Province_State === '') {
-          continue;
+        // Country for which only province info is provided
+        let row;
+        if (countryRow.Province_State !== '') {
+          // Province
+          row = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawGlobalTimeSeriesData);
+        } else {
+          // Top-level entity (e.g. Canada) - roll-up
+          console.log('countryRow', countryRow.Country_Region);
+          // TODO: Roll-up here
+          const provinces = this._getRawRows(countryRow.Country_Region, rawGlobalTimeSeriesData);
+          console.log('provinces', provinces);
+          row = this._combineDataForCountry(provinces, countryRow.Country_Region);
+          console.log('combined', row);
         }
-        const provinceRow = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawGlobalTimeSeriesData);
-        if (provinceRow) {
-          normalized.push(provinceRow);
+        if (row) {
+          normalized.push(row);
         } else {
           console.warn('Could not find province row for', countryRow.Country_Region, countryRow.Province_State);
         }
