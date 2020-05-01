@@ -70,7 +70,14 @@ class CovidData {
 
   // Country_Region,Province_State
   getDeathRowForCountry(country, province) {
-    const row = this.normalizedDeathData.filter(row => (row['Province/State'] === province && row['Country/Region'] === country))[0];
+    const row = this.normalizedDeathData.filter(el => {
+      if (typeof el !== 'undefined' && typeof el['Province/State'] !== 'undefined' && typeof el['Country/Region'] !== 'undefined') {
+        return (el['Province/State'] === province && el['Country/Region'] === country);
+      } else {
+        console.warn('Row did not have the correct values:', el, this.normalizedDeathData);
+        return false;
+      }
+    })[0];
     return row;
   }
 
@@ -169,7 +176,11 @@ class CovidData {
           // Regular country
           row = this._getRawRow(countryRow.Country_Region, countryRow.Province_State, rawGlobalTimeSeriesData);
         }
-        normalized.push(row);
+        if (row) {
+          normalized.push(row);
+        } else {
+          console.warn('Could not find province row for', countryRow.Country_Region, countryRow.Province_State);
+        }
       } else {
         // Country for which only province info is provided
         let row;
