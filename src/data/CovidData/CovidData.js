@@ -30,6 +30,14 @@ class CovidData {
         // cruise ships for Canada
         continue;
       }
+      if (el.Country_Region !== 'US'
+        && !dataAsProvinces.hasOwnProperty(el.Country_Region) 
+        && !this._hasDeathData(el.Country_Region, el.Province_State)) {
+        // We've started to see data for some provinces (like Spain) appear in
+        // the country data but not the time series
+        console.warn('Removing this entity because of lack of data:', el.Country_Region, el.Province_State)
+        continue;
+      }
       if (el.Country_Region === 'US' && (el.Admin2 !== '')) {
         // Clear any that have non-blank Admin2 values. These seem to be
         // counties in the US
@@ -43,6 +51,14 @@ class CovidData {
       return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
     });
     return normalized;
+  }
+
+  _hasDeathData(country, province) {
+    const row = rawGlobalDeathData.filter(el => (el['Country/Region'] === country && el['Province/State'] === province));
+    if (row.length > 0) {
+      return true;
+    }
+    return false;
   }
 
   _getRawRow(country, province, rawGlobalDeathData) {
