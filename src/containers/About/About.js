@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 
 import classes from './About.module.css';
 
-console.log('@@ classes', classes);
-
 class About extends Component {
   render() {
     return (
