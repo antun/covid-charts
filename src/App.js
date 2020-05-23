@@ -1,21 +1,27 @@
-import React from 'react';
+import React, { Component } from 'react';
 import classes from './App.modules.css';
+import { Route, Switch, withRouter, Redirect } from 'react-router-dom';
+import Layout from './hoc/Layout/Layout';
 
-import Header from './components/Header/Header';
-import Footer from './components/Footer/Footer';
 import ChartDisplay from './containers/ChartDisplay/ChartDisplay';
 
 
-function App() {
-  return (
-    <div className={classes.App}>
-      <Header />
-      <main>
-        <ChartDisplay />
-      </main>
-      <Footer />
-    </div>
-  );
+class App extends Component {
+  render() {
+    let routes = (
+      <Switch>
+        <Route path="/" exact component={ChartDisplay} />
+        <Redirect to="/" />
+      </Switch>
+    );
+    return (
+      <div className={classes.App}>
+        <Layout>
+          { routes }
+        </Layout>
+      </div>
+    );
+  }
 }
 
-export default App;
+export default withRouter(App);
