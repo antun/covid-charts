@@ -14,6 +14,8 @@ import CovidData from '../../data/CovidData/CovidData';
 
 import * as Utils from '../../utils/utils';
 
+import * as UrlHandling from '../../utils/urlHandling';
+
 const covidDataInstance = new CovidData();
 const countryData = covidDataInstance.countryData();
 
@@ -110,8 +112,13 @@ class ChartDisplay extends Component {
       });
     } else {
       // Only on first run copy default countries
+      const urlCountries = UrlHandling.getCountriesFromQuerystring(this.props.history.location.search);
+      let initialCountries = this.state.initialCountries;
+      if (urlCountries && Array.isArray(urlCountries) && urlCountries.length > 0) {
+        initialCountries = urlCountries;
+      }
       selectedCountries = countryData.filter(country => (
-        this.state.initialCountries.findIndex(initialCountry => (country.Country_Region === initialCountry.Country_Region && country.Province_State === initialCountry.Province_State)) > -1
+        initialCountries.findIndex(initialCountry => (country.Country_Region === initialCountry.Country_Region && country.Province_State === initialCountry.Province_State)) > -1
       ));
     }
     // const startDate = new Date('2020-01-22');
@@ -126,18 +133,32 @@ class ChartDisplay extends Component {
   };
 
   getInitialCountryState = () => {
-    return countryData.map(el => (
-      {...el, selected: this.state.initialCountries.find(initialCountry => (
+    const urlCountries = UrlHandling.getCountriesFromQuerystring(this.props.history.location.search);
+    let initialCountries = this.state.initialCountries;
+    if (urlCountries && Array.isArray(urlCountries) && urlCountries.length > 0) {
+      initialCountries = urlCountries;
+    }
+    const resp = countryData.map(el => (
+      {...el, selected: initialCountries.find(initialCountry => (
         el.Country_Region === initialCountry.Country_Region
           && el.Province_State === initialCountry.Province_State
           )
         ) !== undefined}
       )
     );
+    console.log('@@@@ resp', resp);
+
+    return resp;
   };
 
   getSelectedCountries = () => {
     return this.state.countries.filter(el => el.selected);
+  };
+
+  updateUrl = () => {
+    const selectedCountries = this.getSelectedCountries();
+    const newQueryString = UrlHandling.makeNewQueryString(this.props.history.location.search, selectedCountries);
+    this.props.history.push({pathname: this.props.location.pathname, search: '?' + newQueryString});
   };
 
   countryCheckedHandler = (country, selected) => {
@@ -148,12 +169,16 @@ class ChartDisplay extends Component {
       }
       return newEl;
     });
+    
     this.setState({
       countries: newResults,
       chartData: this.makeChartData()
     });
     let countryLabel = country.Province_State ? ' ('+country.Province_State+')' : '';
     countryLabel = country.Country_Region + countryLabel;
+
+    this.updateUrl();
+
     window.gtag('event', 'select', {
       event_category: 'Country',
       event_label: countryLabel
