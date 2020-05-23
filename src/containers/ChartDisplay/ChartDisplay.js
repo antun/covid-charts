@@ -43,8 +43,8 @@ class ChartDisplay extends Component {
     ],
     chartData: [],
     xAxisTitle: 'Date',
-    yAxisTitle: 'Deaths / 1M Population'
-
+    yAxisTitle: 'Deaths / 1M Population',
+    initialLoad: true
   };
 
 
@@ -146,8 +146,6 @@ class ChartDisplay extends Component {
         ) !== undefined}
       )
     );
-    console.log('@@@@ resp', resp);
-
     return resp;
   };
 
@@ -157,7 +155,7 @@ class ChartDisplay extends Component {
 
   updateUrl = () => {
     const selectedCountries = this.getSelectedCountries();
-    const newQueryString = UrlHandling.makeNewQueryString(this.props.history.location.search, selectedCountries);
+    const newQueryString = UrlHandling.makeNewQueryString(this.props.history.location.search, selectedCountries, this.state.adjustments);
     this.props.history.push({pathname: this.props.location.pathname, search: '?' + newQueryString});
   };
 
@@ -283,6 +281,8 @@ class ChartDisplay extends Component {
       event_category: 'Date Alignment Case Offset',
       event_label: e.target.value
     });
+
+    this.updateUrl();
   }
 
   refreshChart = () => {
@@ -291,6 +291,14 @@ class ChartDisplay extends Component {
       xAxisTitle: this.getXAxisTitle(),
       yAxisTitle: this.getYAxisTitle()
     });
+    // Special case for first load. Don't redirect the user from the standard URL
+    if (!this.state.initialLoad) {
+      this.updateUrl();
+    } else {
+      this.setState({
+        initialLoad: false
+      });
+    }
   }
   
   componentDidMount() {
@@ -299,7 +307,11 @@ class ChartDisplay extends Component {
       countries: this.getInitialCountryState(),
       chartData: this.makeChartData() 
     };
-    this.setState(initialState);
+    const urlAdjustments = UrlHandling.getAdjustmentsFromQuerystring(this.props.history.location.search);
+    if (urlAdjustments) {
+      initialState.adjustments = urlAdjustments;
+    }
+    this.setState(initialState, this.refreshChart);
   }
 
   render() {
