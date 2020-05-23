@@ -11,9 +11,9 @@ class App extends Component {
   render() {
     let routes = (
       <Switch>
-        <Route path="/about" component={About} />
-        <Route path="/" exact component={ChartDisplay} />
-        <Redirect to="/" />
+        <Route path="/software/sites/covid-charts/about" component={About} />
+        <Route path="/software/sites/covid-charts/" component={ChartDisplay} />
+        <Redirect to="/software/sites/covid-charts/" />
       </Switch>
     );
     return (
