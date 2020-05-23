@@ -1,0 +1,12 @@
+.NavigationItems {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+  height: 100%;
+  width: auto;
+  float: right;
+  background-color: #4a2323;
+}
