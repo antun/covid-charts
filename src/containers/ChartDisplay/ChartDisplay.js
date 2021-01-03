@@ -50,7 +50,7 @@ class ChartDisplay extends Component {
 
   formatDateForChartDisplay = (date) => {
     // This will get converted by the chart
-    return 1900+date.getYear() + '-' + (date.getUTCMonth()+1) + '-' + date.getUTCDate()
+    return date.getUTCFullYear() + '-' + (date.getUTCMonth()+1) + '-' + date.getUTCDate()
   }
 
   makeRowForChart = (country, province, startDate, endDate) => {
