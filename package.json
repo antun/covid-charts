@@ -1,6 +1,6 @@
 {
   "name": "covid-charts",
-  "version": "2.2.43",
+  "version": "2.2.44",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
